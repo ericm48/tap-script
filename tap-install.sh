@@ -386,12 +386,15 @@ fi
      # pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
 
      mkdir $HOME/tanzu
-#        tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
-        tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
+		 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
+     
+     tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
      export TANZU_CLI_NO_INIT=true
+     
      cd $HOME/tanzu
-#        sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu
-	 sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 
+		 #sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu
+	 		
+ 		 sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 
          tanzu version
      tanzu plugin install --local cli all
          tanzu plugin list
