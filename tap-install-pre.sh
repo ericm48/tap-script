@@ -19,6 +19,7 @@ tanzu package repository add tanzu-tap-repository --url registry.tanzu.vmware.co
 #tanzu package repository add tanzu-tap-repository --url registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.3.2 --namespace tap-install
 
 tanzu package repository get tanzu-tap-repository --namespace tap-install
+
 echo "############# List the available packages ####################"
 tanzu package available list --namespace tap-install
 

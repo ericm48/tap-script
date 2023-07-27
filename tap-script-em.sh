@@ -10,8 +10,6 @@ read -p "Enter the Tanzu network username: " tanzunetusername
 read -p "Enter the Tanzu network password: " tanzunetpassword
 read -p "Enter the domain name for Learning center: " domainname
 read -p "Enter github token (to be collected from Githubportal): " githubtoken
-read -p "Enter TAP Target Cluster Name: " tapClusterName
-
 echo " ######  You choose to deploy the kubernetes cluster on $cloud ########"
 echo "#####################################################################################################"
 if [ "$cloud" == "AKS" ];
@@ -19,64 +17,53 @@ if [ "$cloud" == "AKS" ];
 	 
 	 echo "#################  Installing AZ cli #####################"
 	 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-   echo "#########################################"
-   echo "################ AZ CLI version #####################"
-
-   az --version
-   echo "############### Creating AKS Cluster #####################"
-   echo "#####################################################################################################"
-   echo "#############  Authenticate to AZ cli by following the screen Instructions below #################"
-   echo "#####################################################################################################"
-
+         echo "#########################################"
+         echo "################ AZ CLI version #####################"
+         az --version
+         echo "############### Creating AKS Cluster #####################"
+         echo "#####################################################################################################"
+         echo "#############  Authenticate to AZ cli by following the screen Instructions below #################"
+         echo "#####################################################################################################"
 	 az login
-	 echo "#########################################"
-	 read -p "Enter the Subscription ID: " subscription
-	 read -p "Enter the region: " region
-	 echo "#########################################"
-	 echo "Resource group created with name eric-tap-east-rg in region and subscription mentioned above"
-	 echo "#########################################"
-
-	 az group create --name eric-tap-east-rg --location $region --subscription $subscription
-   echo "#########################################"
-   echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
-   echo "#########################################"
-   
-   az aks create --resource-group eric-tap-east-rg --name tapClusterName --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
-   echo "############### Created AKS Cluster ###############"
+         echo "#########################################"
+         read -p "Enter the Subscription ID: " subscription
+         read -p "Enter the region: " region
+         echo "#########################################"
+         echo "Resource group created with name chris-tap-workshop-cluster-RG in region and subscription mentioned above"
+         echo "#########################################"
+	 az group create --name chris-tap-workshop-cluster-RG --location $region --subscription $subscription
+         echo "#########################################"
+	 echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
+         echo "#########################################"
+         az aks create --resource-group chris-tap-workshop-cluster-RG --name tap-cluster-1 --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
+         echo "############### Created AKS Cluster ###############"
 	 echo "############### Install kubectl ##############"
-	 
 	 sudo az aks install-cli
 	 echo "############### Set the context ###############"
-	 
 	 az account set --subscription $subscription
-	 az aks get-credentials --resource-group eric-tap-east-rg --name tapClusterName
+	 az aks get-credentials --resource-group chris-tap-workshop-cluster-RG --name tap-cluster-1
 	 echo "############## Verify the nodes #################"
-   echo "#####################################################################################################"
-
+         echo "#####################################################################################################"
 	 kubectl get nodes
-   echo "#####################################################################################################"
+         echo "#####################################################################################################"
 	 echo "###### Create RG for Repo  ######"
-
-	 az group create --name eric-tap-workshop-imagerepo-rg --location $region
-	 
+	 az group create --name chris-tap-workshop-imagerepo-RG --location $region
 	 echo "####### Create container registry  ############"
-   echo "#####################################################################################################"
-	 
-	 az acr create --resource-group eric-tap-workshop-imagerepo-rg --name ericmtaptestdemoacr --sku Standard	 
-
+         echo "#####################################################################################################"
+	 az acr create --resource-group chris-tap-workshop-imagerepo-RG --name chrishtaptestdemoacr --sku Standard
 	 echo "####### Fetching acr Admin credentials ##########"
-	 az acr update -n ericmtaptestdemoacr --admin-enabled true
-         acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
-         acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
-         acrpassword=$(az acr credential show --name ericmtaptestdemoacr --query passwords[0].value -o tsv)
+	 az acr update -n chrishtaptestdemoacr --admin-enabled true
+         acrusername=$(az acr credential show --name chrishtaptestdemoacr --query "username" -o tsv)
+         acrloginserver=$(az acr show --name chrishtaptestdemoacr --query loginServer -o tsv)
+         acrpassword=$(az acr credential show --name chrishtaptestdemoacr --query passwords[0].value -o tsv)
          if grep -q "/"  <<< "$acrpassword";
              then
-	        acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
+	        acrpassword1=$(az acr credential show --name chrishtaptestdemoacr --query passwords[1].value -o tsv)
 	        if grep -q "/"  <<< "$acrpassword1";
 	          then
-           	   echo "##########################################################################"
-		  	       echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
-               echo "###########################################################################"
+                	   echo "##########################################################################"
+		  	   echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
+                  	   echo "###########################################################################"
 	        else
 		   acrpassword=$acrpassword1
 	        fi
@@ -103,7 +90,7 @@ elif [ "$cloud" == "EKS" ];
          read -p "Enter the dockerhub password: " dockerpassword
          echo "#########################################"
          echo "#########################################"
-	 			 echo "Installing AWS cli"
+	 echo "Installing AWS cli"
          echo "#########################################"
          echo "#########################################"
          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -364,20 +351,14 @@ fi
      sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
          
      echo "########## Installing Tanzu CLI  #############"
-
-     pivnet login --api-token=${pivnettoken}     
-     pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.0' --product-file-id=1460876		 
-     
-		 #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
-		 #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
-
+     pivnet login --api-token=${pivnettoken}
+#         pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
+	 pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
      mkdir $HOME/tanzu-cluster-essentials
-     tar -xvf tanzu-cluster-essentials-linux-amd64-1.5.0.tgz -C $HOME/tanzu-cluster-essentials 	      
-
-		 #tar -xvf tanzu-cluster-essentials-linux-amd64-1.4.0.tgz -C $HOME/tanzu-cluster-essentials
-		 #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2354688e46d4bb4060f74fca069513c9b42ffa17a0a6d5b0dbb81ed52242ea44
-		 #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9 
-     export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:61dff81ced8a604c82e88f4fb78f4eacb1bc27492cf6a07183702137210d6d74
+#    tar -xvf tanzu-cluster-essentials-linux-amd64-1.4.0.tgz -C $HOME/tanzu-cluster-essentials
+     tar -xvf tanzu-cluster-essentials-linux-amd64-1.3.0.tgz -C $HOME/tanzu-cluster-essentials 	      
+#    export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2354688e46d4bb4060f74fca069513c9b42ffa17a0a6d5b0dbb81ed52242ea44
+     export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9     
      export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
      export INSTALL_REGISTRY_USERNAME=$tanzunetusername
      export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
@@ -386,31 +367,20 @@ fi
      echo "######## Installing Kapp ###########"
      sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
      sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
-     kapp version
-
-     echo "############ Downlaoding/Installing TAP 1.5.3 #####################"
-     pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id=1478717
-     
-		 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
-		 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
-
+         kapp version
+     echo "#################################"
+#         pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
+       pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
      mkdir $HOME/tanzu
-		 tar -xvf  tanzu-framework-linux-amd64-v0.28.1.3.tar -C $HOME/tanzu
-
-		 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
-     #tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
-
+#        tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
+        tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
      export TANZU_CLI_NO_INIT=true
-
      cd $HOME/tanzu
-	 	 sudo install cli/core/v0.28.1/tanzu-core-linux_amd64 /usr/local/bin/tanzu	
-	 	 
-	   #sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 
-     #sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu
-
-     tanzu version
+#        sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu
+	 sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 
+         tanzu version
      tanzu plugin install --local cli all
-     tanzu plugin list
+         tanzu plugin list
      echo "######### Installing Docker ############"
      sudo apt-get update
      sudo apt-get install  ca-certificates curl  gnupg  lsb-release
@@ -419,14 +389,12 @@ fi
      sudo apt-get update
      sudo apt-get install docker-ce docker-ce-cli containerd.io -y
      sudo usermod -aG docker $USER
-
-     echo "####### Verify Docker Version  ###########"
-     sudo apt-get install jq -y
-     export INSTALL_REGISTRY_USERNAME=$tanzunetusername
-     export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
-     export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
-     tanzu secret registry add tap-registry --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} --server ${INSTALL_REGISTRY_HOSTNAME} --export-to-all-namespaces --yes --namespace tap-install
-
-     #echo "#####################################################################################################"
-     #echo "########### Rebooting #############"
-     #sudo reboot
+         echo "####### Verify Docker Version  ###########"
+         sudo apt-get install jq -y
+         export INSTALL_REGISTRY_USERNAME=$tanzunetusername
+         export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
+         export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
+         tanzu secret registry add tap-registry --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} --server ${INSTALL_REGISTRY_HOSTNAME} --export-to-all-namespaces --yes --namespace tap-install
+         echo "#####################################################################################################"
+         echo "########### Rebooting #############"
+         sudo reboot
