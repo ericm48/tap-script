@@ -25,7 +25,9 @@ echo "############# List the available packages ####################"
 tanzu package available list --namespace tap-install
 
 echo "############### TAP 1.5.3 Install   ##################"
-tanzu package install tap -p tap.tanzu.vmware.com -v 1.5.3 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
+tanzu package install tap -p tap.tanzu.vmware.com -v 1.5.3 --values-file ./tap-values.yaml -n tap-install
+
+#tanzu package install tap -p tap.tanzu.vmware.com -v 1.5.3 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
 
 #tanzu package install tap -p tap.tanzu.vmware.com -v 1.5.0 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
 
