@@ -1,4 +1,9 @@
 #!/bin/bash  
+
+# Instructions as of 31-Jul-2023:
+# Order:
+# #1 tap-script.sh 
+# #2 tap-install-pre.sh 
   
 echo "######################## Type: AKS for Azure, EKS for Amazon, GKE for Google ########################"
 echo "############################ If you choose EKS, Keep docker.io credentials handy ######################"
