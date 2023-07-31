@@ -41,7 +41,7 @@ if [ "$cloud" == "AKS" ];
    echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
    echo "#########################################"
    
-   az aks create --resource-group eric-tap-east-rg --name tapClusterName --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
+   az aks create --resource-group eric-tap-east-rg --name $tapClusterName --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
    echo "############### Created AKS Cluster ###############"
 	 echo "############### Install kubectl ##############"
 	 
@@ -49,7 +49,7 @@ if [ "$cloud" == "AKS" ];
 	 echo "############### Set the context ###############"
 	 
 	 az account set --subscription $subscription
-	 az aks get-credentials --resource-group eric-tap-east-rg --name tapClusterName
+	 az aks get-credentials --resource-group eric-tap-east-rg --name $tapClusterName
 	 echo "############## Verify the nodes #################"
    echo "#####################################################################################################"
 
@@ -78,7 +78,7 @@ if [ "$cloud" == "AKS" ];
 		  	       echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
                echo "###########################################################################"
 	        else
-		   acrpassword=$acrpassword1
+		   				 acrpassword=$acrpassword1
 	        fi
          else
    	          echo "Password Updated in tap values file"
