@@ -353,7 +353,7 @@ fi
      echo "########## Installing Tanzu CLI  #############"
      pivnet login --api-token=${pivnettoken}
 
-     pivnet download-product-files --product-slug=tanzu-cluster-essentials --release-version=1.5.3 --product-file-id=1460876
+     pivnet download-product-files --product-slug=tanzu-cluster-essentials --release-version=1.5.3 --product-file-id=1340801
 
      # pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
 	   # pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
