@@ -384,7 +384,8 @@ fi
          kapp version
      echo "#################################"
 
-		 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id=1335463
+		 
+		 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'
 		 
 		 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1404618
 		 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
