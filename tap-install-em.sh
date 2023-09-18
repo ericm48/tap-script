@@ -35,13 +35,13 @@ if [ "$cloud" == "AKS" ];
          echo "#########################################"
 	 echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
          echo "#########################################"
-         az aks create --resource-group eric-tap-east-rg --name tap-cluster-150 --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
+         az aks create --resource-group eric-tap-east-rg --name tap-cluster-153 --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
          echo "############### Created AKS Cluster ###############"
 	 echo "############### Install kubectl ##############"
 	 sudo az aks install-cli
 	 echo "############### Set the context ###############"
 	 az account set --subscription $subscription
-	 az aks get-credentials --resource-group eric-tap-east-rg --name tap-cluster-150
+	 az aks get-credentials --resource-group eric-tap-east-rg --name tap-cluster-153
 	 echo "############## Verify the nodes #################"
          echo "#####################################################################################################"
 	 kubectl get nodes
@@ -353,13 +353,13 @@ fi
      echo "########## Installing Tanzu CLI  #############"
      pivnet login --api-token=${pivnettoken}
 
-     pivnet download-product-files --product-slug=tanzu-cluster-essentials --release-version=1.5.0 --product-file-id=1460876
+     pivnet download-product-files --product-slug=tanzu-cluster-essentials --release-version=1.5.3 --product-file-id=1460876
 
      # pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
 	   # pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
      mkdir $HOME/tanzu-cluster-essentials
 		 
-		 tar -xvf tanzu-cluster-essentials-linux-amd64-1.5.0.tgz -C $HOME/tanzu-cluster-essentials
+		 tar -xvf tanzu-cluster-essentials-linux-amd64-1.5.3.tgz -C $HOME/tanzu-cluster-essentials
 
 		 # tar -xvf tanzu-cluster-essentials-linux-amd64-1.4.0.tgz -C $HOME/tanzu-cluster-essentials
      # tar -xvf tanzu-cluster-essentials-linux-amd64-1.3.0.tgz -C $HOME/tanzu-cluster-essentials 	      
@@ -380,10 +380,11 @@ fi
          kapp version
      echo "#################################"
 
-		 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1404618
+		 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id=1335463
 		 
-		 # pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
-     # pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
+		 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1404618
+		 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
+     #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
 
      mkdir $HOME/tanzu
 		 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
