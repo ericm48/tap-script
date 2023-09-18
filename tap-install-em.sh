@@ -17,54 +17,54 @@ if [ "$cloud" == "AKS" ];
 	 
 	 echo "#################  Installing AZ cli #####################"
 	 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-         echo "#########################################"
-         echo "################ AZ CLI version #####################"
-         az --version
-         echo "############### Creating AKS Cluster #####################"
-         echo "#####################################################################################################"
-         echo "#############  Authenticate to AZ cli by following the screen Instructions below #################"
-         echo "#####################################################################################################"
+   echo "#########################################"
+   echo "################ AZ CLI version #####################"
+   az --version
+   echo "############### Creating AKS Cluster #####################"
+   echo "#####################################################################################################"
+   echo "#############  Authenticate to AZ cli by following the screen Instructions below #################"
+   echo "#####################################################################################################"
 	 az login
-         echo "#########################################"
-         read -p "Enter the Subscription ID: " subscription
-         read -p "Enter the region: " region
-         echo "#########################################"
-         echo "Resource group created with name eric-tap-east-rg in region and subscription mentioned above"
-         echo "#########################################"
+   echo "#########################################"
+   read -p "Enter the Subscription ID: " subscription
+   read -p "Enter the region: " region
+   echo "#########################################"
+   echo "Resource group created with name eric-tap-east-rg in region and subscription mentioned above"
+   echo "#########################################"
 	 az group create --name eric-tap-east-rg --location $region --subscription $subscription
-         echo "#########################################"
+   echo "#########################################"
 	 echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
-         echo "#########################################"
-         az aks create --resource-group eric-tap-east-rg --name tap-cluster-153 --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
-         echo "############### Created AKS Cluster ###############"
+   echo "#########################################"
+   az aks create --resource-group eric-tap-east-rg --name tap-cluster-153 --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
+   echo "############### Created AKS Cluster ###############"
 	 echo "############### Install kubectl ##############"
 	 sudo az aks install-cli
 	 echo "############### Set the context ###############"
 	 az account set --subscription $subscription
 	 az aks get-credentials --resource-group eric-tap-east-rg --name tap-cluster-153
 	 echo "############## Verify the nodes #################"
-         echo "#####################################################################################################"
+   echo "#####################################################################################################"
 	 kubectl get nodes
-         echo "#####################################################################################################"
+   echo "#####################################################################################################"
 	 echo "###### Create RG for Repo  ######"
 	 az group create --name eric-tap-workshop-imagerepo-rg --location $region
 	 echo "####### Create container registry  ############"
-         echo "#####################################################################################################"
+   echo "#####################################################################################################"
 	 az acr create --resource-group eric-tap-workshop-imagerepo-rg --name ericmtaptestdemoacr --sku Standard
 	 echo "####### Fetching acr Admin credentials ##########"
 	 az acr update -n ericmtaptestdemoacr --admin-enabled true
-         acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
-         acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
-         acrpassword=$(az acr credential show --name ericmtaptestdemoacr --query passwords[0].value -o tsv)
-         if grep -q "/"  <<< "$acrpassword";
-             then
-	        acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
-	        if grep -q "/"  <<< "$acrpassword1";
-	          then
-                	   echo "##########################################################################"
-		  	   echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
-                  	   echo "###########################################################################"
-	        else
+   acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
+   acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
+   acrpassword=$(az acr credential show --name ericmtaptestdemoacr --query passwords[0].value -o tsv)
+   if grep -q "/"  <<< "$acrpassword";
+       then
+			    acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
+			    if grep -q "/"  <<< "$acrpassword1";
+			      then
+          	   echo "##########################################################################"
+	   					 echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
+            	 echo "###########################################################################"
+    else
 		   acrpassword=$acrpassword1
 	        fi
          else
@@ -378,10 +378,11 @@ fi
      export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
      cd $HOME/tanzu-cluster-essentials
      ./install.sh
+
      echo "######## Installing Kapp ###########"
      sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
      sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
-         kapp version
+     kapp version
      echo "#################################"
 
 		 
@@ -392,32 +393,40 @@ fi
      #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
 
      mkdir $HOME/tanzu
-		 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
-     
+
      tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
+		 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
+
      export TANZU_CLI_NO_INIT=true
      
      cd $HOME/tanzu
-		 #sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu
-	 		
- 		 sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 
-         tanzu version
+		 sudo install cli/core/v0.28.1/tanzu-core-linux_amd64 /usr/local/bin/tanzu     
+		 
+		 #sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 		
+ 		 #sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu
+ 		 
+     tanzu version
      tanzu plugin install --local cli all
-         tanzu plugin list
-     echo "######### Installing Docker ############"
-     sudo apt-get update
-     sudo apt-get install  ca-certificates curl  gnupg  lsb-release
-     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-     sudo apt-get update
-     sudo apt-get install docker-ce docker-ce-cli containerd.io -y
-     sudo usermod -aG docker $USER
-         echo "####### Verify Docker Version  ###########"
-         sudo apt-get install jq -y
-         export INSTALL_REGISTRY_USERNAME=$tanzunetusername
-         export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
-         export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
-         tanzu secret registry add tap-registry --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} --server ${INSTALL_REGISTRY_HOSTNAME} --export-to-all-namespaces --yes --namespace tap-install
-         #echo "#####################################################################################################"
-         #echo "########### Rebooting #############"
-         #sudo reboot
+     tanzu plugin list
+     
+     #echo "######### Installing Docker ############"
+     #sudo apt-get update
+     #sudo apt-get install  ca-certificates curl  gnupg  lsb-release
+     #curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+     #echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+     #sudo apt-get update
+     #sudo apt-get install docker-ce docker-ce-cli containerd.io -y
+     #sudo usermod -aG docker $USER
+
+     #echo "####### Verify JQ Version  ###########"
+     #sudo apt-get install jq -y
+
+     export INSTALL_REGISTRY_USERNAME=$tanzunetusername
+     export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
+     export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
+     
+     tanzu secret registry add tap-registry --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} --server ${INSTALL_REGISTRY_HOSTNAME} --export-to-all-namespaces --yes --namespace tap-install
+     
+     #echo "#####################################################################################################"
+     #echo "########### Rebooting #############"
+     #sudo reboot
