@@ -1,18 +1,138 @@
 #!/bin/bash  
+
+
+#
+# Notes:
+#
+# -19-Sept-2023:    Do not trust the pivnet file-id's.  These tend to be wrong.
+# 									Go out to: https://network.pivotal.io/products/tanzu-application-platform
+#                   Pull up the cluster-essentials or tap-cli, then goto the download link,
+#                   and copy it from there.  Same is true for the SHA.
+#
+
+
+
+
+theCloud=""
+thePivNetToken=""
+
+theTanzuNetUsername=""
+theTanzuNetPassword=""
+theDomainName=""
+theGithubToken=""
+theClusterName=""
+theAzureSubscription=""
+theAzureRegion=""
+
+
+function usage() {
+
+  echo ""
+  echo "Usage: $0 -Installs TAP to a target cloud." 
+  echo ""
+  echo ""
+  echo "Options: "
+  echo ""
+  echo "  -A number of parameters can be exported to evars to reduce cycle-time."
+  echo "   These are prefaced with TS_"
+  echo ""
+  exit 1
   
-echo "######################## Type: AKS for Azure, EKS for Amazon, GKE for Google ########################"
-echo "############################ If you choose EKS, Keep docker.io credentials handy ######################"
-read -p "Enter the destination K8s cluster: " cloud
-echo "#####################################################################################################"
-echo "##### Pivnet Token: login to tanzu network, click on your username in top right corner of the page > select Edit Profile, scroll down and click on Request New Refresh Token ######"
-read -p "Enter the Pivnet token: " pivnettoken
-read -p "Enter the Tanzu network username: " tanzunetusername
-read -p "Enter the Tanzu network password: " tanzunetpassword
-read -p "Enter the domain name for Learning center: " domainname
-read -p "Enter github token (to be collected from Githubportal): " githubtoken
-echo " ######  You choose to deploy the kubernetes cluster on $cloud ########"
-echo "#####################################################################################################"
-if [ "$cloud" == "AKS" ];
+}
+
+function load_params() {
+  
+  if [[ -z $TS_TARGET_CLOUD ]]; then
+		echo "######################## Type: AKS for Azure, EKS for Amazon, GKE for Google ########################"
+		echo "############################ If you choose EKS, Keep docker.io credentials handy ######################"
+		read -p "Enter The Target Cloud: " theCloud  
+	else
+		theCloud="$TS_TARGET_CLOUD"
+  fi
+
+  if [[ -z $TS_PIVNET_TOKEN ]]; then
+		read -p "Enter the Pivnet token: " thePivNetToken	
+	else
+		thePivNetToken="$TS_PIVNET_TOKEN"
+  fi
+
+  if [[ -z $TS_TANZU_USERNAME ]]; then
+		read -p "Enter the Tanzu network username: " theTanzuNetUsername
+	else
+		theTanzuNetUsername="$TS_TANZU_USERNAME"
+  fi
+
+  if [[ -z $TS_TANZU_PASSWORD ]]; then
+		read -p "Enter the Tanzu network password: " theTanzuNetPassword
+	else
+		theTanzuNetPassword="$TS_TANZU_PASSWORD"
+  fi
+
+  if [[ -z $TS_DOMAIN_NAME ]]; then
+		read -p "Enter the target domain-name for Learning Center: " theDomainName
+	else
+		theDomainName="$TS_DOMAIN_NAME"
+  fi
+
+  if [[ -z $TS_GITHUB_TOKEN ]]; then
+		read -p "Enter the Github Token: " theGithubToken
+	else
+		theGithubToken="$TS_GITHUB_TOKEN"
+  fi
+
+  if [[ -z $TS_GITHUB_TOKEN ]]; then
+		read -p "Enter the Target Cluster-Name: " theClusterName
+	else
+		theClusterName="$TS_CLUSTER_NAME"
+  fi
+
+  if [[ -z $TS_AZURE_SUBSCRIPTION ]]; then
+		read -p "Enter the Azure Subscription: " theAzureSubscription
+	else
+		theAzureSubscription="$TS_AZURE_SUBSCRIPTION"
+  fi
+
+  if [[ -z $TS_AZURE_REGION ]]; then
+		read -p "Enter the Azure Region (eastus): " theAzureRegion
+	else
+		theAzureRegion="$TS_AZURE_REGION"
+  fi
+
+
+  
+}
+
+function display_params() {
+	echo ""
+	echo ""
+	echo "Parameters"
+	echo "     TargetCloud: $theCloud"
+	echo "     PivNetToken: $thePivNetToken"	
+
+	echo "     TanzuNetUserName: $theTanzuNetUsername"	
+	echo "     TanzuNetPassword: ***"	# theTanzuNetPassword
+	echo "     DomainName: $theDomainName"	
+	echo "     GithubToken: $theGithubToken"	
+	echo "     ClusterName: $theClusterName"	
+	echo "     AzureSubscription: $theAzureSubscription"	
+	echo "     AzureRegion: $theAzureRegion"	
+
+	echo ""
+	echo ""
+
+}
+
+
+	if [  "$1" == "-H" ] || [ "$1" == "-h" ] || [ "$1" == "--H" ] || [ "$1" == "--h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]
+		then
+			usage
+	fi		
+
+
+	load_params
+  display_params
+
+if [ "$theCloud" == "AKS" ];
  then
 	 
 	 echo "#################  Installing AZ cli #####################"
@@ -20,37 +140,45 @@ if [ "$cloud" == "AKS" ];
    echo "#########################################"
    echo "################ AZ CLI version #####################"
    az --version
-   echo "############### Creating AKS Cluster #####################"
+   
+
    echo "#####################################################################################################"
    echo "#############  Authenticate to AZ cli by following the screen Instructions below #################"
    echo "#####################################################################################################"
 	 az login
+
+   
    echo "#########################################"
-   read -p "Enter the Subscription ID: " subscription
-   read -p "Enter the region: " region
+   echo "Resource group created with name eric-tap-east-rg in region and the subscription mentioned above"
    echo "#########################################"
-   echo "Resource group created with name eric-tap-east-rg in region and subscription mentioned above"
-   echo "#########################################"
-	 az group create --name eric-tap-east-rg --location $region --subscription $subscription
+	 az group create --name eric-tap-east-rg --location $theAzureRegion --subscription $theAzureSubscription
+
    echo "#########################################"
 	 echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
    echo "#########################################"
-   az aks create --resource-group eric-tap-east-rg --name tap-cluster-153 --subscription $subscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
+   az aks create --resource-group eric-tap-east-rg --name $theClusterName --subscription $theAzureSubscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
+
    echo "############### Created AKS Cluster ###############"
 	 echo "############### Install kubectl ##############"
+	 
 	 sudo az aks install-cli
+	 
 	 echo "############### Set the context ###############"
-	 az account set --subscription $subscription
-	 az aks get-credentials --resource-group eric-tap-east-rg --name tap-cluster-153
+	 az account set --subscription $theAzureSubscription
+	 az aks get-credentials --resource-group eric-tap-east-rg --name $theClusterName
+	 
 	 echo "############## Verify the nodes #################"
    echo "#####################################################################################################"
 	 kubectl get nodes
+   
    echo "#####################################################################################################"
 	 echo "###### Create RG for Repo  ######"
-	 az group create --name eric-tap-workshop-imagerepo-rg --location $region
+	 az group create --name eric-tap-workshop-imagerepo-rg --location $theAzureRegion
+	 
 	 echo "####### Create container registry  ############"
    echo "#####################################################################################################"
 	 az acr create --resource-group eric-tap-workshop-imagerepo-rg --name ericmtaptestdemoacr --sku Standard
+	 
 	 echo "####### Fetching acr Admin credentials ##########"
 	 az acr update -n ericmtaptestdemoacr --admin-enabled true
    acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
@@ -83,7 +211,10 @@ if [ "$cloud" == "AKS" ];
          kubectl create ns tap-install
          kubectl create secret docker-registry registry-credentials --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
          kubectl create secret docker-registry image-secret --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
-elif [ "$cloud" == "EKS" ];
+
+
+
+elif [ "$theCloud" == "EKS" ];
  then
 	 read -p "Enter the region: " region
          read -p "Enter the dockerhub username: " dockerusername
@@ -249,7 +380,9 @@ kubectl create secret docker-registry image-secret --docker-server=https://index
 #        sed -i -r "s/repousername/$dockerusername/g" "$HOME/tap-script/tap-values.yaml"
 #        sed -i -r "s/repopassword/$dockerpassword/g" "$HOME/tap-script/tap-values.yaml"
 #        sed -i -r "s/githubtoken/$githubtoken/g" "$HOME/tap-script/tap-values.yaml"
-elif [ "$cloud" == "GKE" ];
+
+
+elif [ "$theCloud" == "GKE" ];
  then
          echo "#########################################"
          echo "#########################################"
@@ -288,7 +421,7 @@ elif [ "$cloud" == "GKE" ];
          kubectl create ns tap-install
          echo "######### Preparing the tap-values file ##########"
          projid=$(gcloud config get-value project)
-service_account_key="$(cat tap-demo-cred.json)"
+         service_account_key="$(cat tap-demo-cred.json)"
 cat <<EOF > tap-values.yaml
 profile: full
 ceip_policy_disclosed: true # Installation fails if this is set to 'false'
@@ -340,18 +473,24 @@ tap_gui:
       cors:
         origin: http://lbip:7000
 EOF
-         echo "#####################################################################################################"
-         echo "########### Creating Secrets in tap-install namespace  #############"
+echo "#####################################################################################################"
+echo "########### Creating Secrets in tap-install namespace  #############"
 kubectl create secret docker-registry registry-credentials --docker-server=gcr.io --docker-username=_json_key --docker-password="$(cat tap-demo-cred.json)" -n tap-install
 kubectl create secret docker-registry image-secret --docker-server=gcr.io --docker-username=_json_key --docker-password="$(cat tap-demo-cred.json)" -n tap-install
 fi
+
+
+
+
+
+
      echo "############# Installing Pivnet ###########"
      wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
      chmod +x pivnet-linux-amd64-3.0.1
      sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
          
      echo "########## Installing Tanzu CLI  #############"
-     pivnet login --api-token=${pivnettoken}
+     pivnet login --api-token=${thePivNetToken}
 
      #pivnet download-product-files --product-slug=tanzu-cluster-essentials --release-version=1.6.1 --product-file-id=1358494
 
@@ -421,8 +560,8 @@ fi
      #echo "####### Verify JQ Version  ###########"
      #sudo apt-get install jq -y
 
-     export INSTALL_REGISTRY_USERNAME=$tanzunetusername
-     export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
+     export INSTALL_REGISTRY_USERNAME=$theTanzuNetUsername
+     export INSTALL_REGISTRY_PASSWORD=$theTanzuNetPassword
      export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
      
      tanzu secret registry add tap-registry --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} --server ${INSTALL_REGISTRY_HOSTNAME} --export-to-all-namespaces --yes --namespace tap-install
