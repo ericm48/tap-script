@@ -23,7 +23,7 @@ theGithubToken=""
 theClusterName=""
 theAzureSubscription=""
 theAzureRegion=""
-
+theResponse=""
 
 function usage() {
 
@@ -119,6 +119,14 @@ function display_params() {
 
 	echo ""
 	echo ""
+	
+	echo "Be ready to enter a code for Azure Login!"
+
+	echo ""
+	echo ""
+	
+	read -p "Press any key to proceed or ctrl-c to end." theResponse
+
 
 }
 
@@ -523,7 +531,6 @@ fi
      sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
      kapp version
      echo "#################################"
-
 		 
 		 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'
 		 
@@ -531,9 +538,10 @@ fi
 		 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
      #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
 
-     mkdir $HOME/tanzu
-
-     tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
+     mkdir $HOME/tanzu     
+     tar -xvf tanzu-framework-linux-amd64-v0.28.1.3.tar -C $HOME/tanzu
+            
+     #tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
 		 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
 
      export TANZU_CLI_NO_INIT=true
