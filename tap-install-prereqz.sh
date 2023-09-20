@@ -645,15 +645,15 @@ function install_tap_prereqs()
   display_params
 
 	if [[ "$theCloud" == "AKS" ]]; then
-		function install_aks
+		install_aks
 	fi
 
 	if [[ "$theCloud" == "AWS" ]]; then
-		function install_aws			
+		install_aws			
 	fi
 	
 	if [[ "$theCloud" == "GKE" ]]; then
-		function install_gke			
+		install_gke			
 	fi
 	
 	install_tap_prereqs
