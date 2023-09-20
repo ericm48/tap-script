@@ -635,10 +635,9 @@ function install_tap_prereqs()
 #
 # Main
 #
-	if [  "$1" == "-H" ] || [ "$1" == "-h" ] || [ "$1" == "--H" ] || [ "$1" == "--h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]
-		then
-			usage
-			exit 10
+	if [[  "$1" == "-H" ] || [ "$1" == "-h" ] || [ "$1" == "--H" ] || [ "$1" == "--h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]]; then
+		usage
+		exit 10
 	fi		
 
 	load_params
