@@ -581,8 +581,8 @@ function install_tap_prereqs()
    echo "######## Installing Kapp ###########"
    sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
    sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
-   kapp version
    echo "#################################"
+   kapp version
 	 
 	 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'
 	 
