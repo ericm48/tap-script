@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo "############## Get the package install status #################"
 tanzu package installed get tap -n tap-install
 tanzu package installed list -A
