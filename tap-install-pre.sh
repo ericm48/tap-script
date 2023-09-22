@@ -808,7 +808,7 @@ function copy_tap_packages()
 	
 	install_otherz  
 	
-	create_registry_secret	
+	create_tap_registry_secret	
 	
 	cd $currentDir
 
