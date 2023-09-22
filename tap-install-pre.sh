@@ -187,24 +187,25 @@ function display_params() {
 	echo ""
 	echo ""
 	echo "Parameters SET:"
+	echo ""	
 	echo "     TargetCloud: $theCloud"
 	echo "     PivNetToken: $thePivNetToken"	
+	echo "     GithubToken: $theGithubToken"		
 	echo ""
 
 	echo "     TanzuNetRegistryHostName: $theTanzuRegistryHostName"	
-	echo "     TanzuNetUserName: $theTanzuNetUserName"	
-	echo "     TanzuNetPassWord: ***"	# theTanzuNetPassWord
+	echo "             TanzuNetUserName: $theTanzuNetUserName"	
+	echo "             TanzuNetPassWord: ***"	# theTanzuNetPassWord
 	echo ""
 	
 	echo "     TAPRegistryHostName: $theTAPRegistryHostName"	
 	echo "     TAPRegistryRepoName: $theTAPRegistryRepoName"
 	echo "     TAPRegistryUserName: $theTAPRegistryUserName"	
 	echo "     TAPRegistryPassWord: ***"	# theTanzuNetPassWord
-	echo "     TAPVersion: $theTAPVersion"	
+	echo "              TAPVersion: $theTAPVersion"	
 	echo ""	
 	
-	echo "     DomainName: $theDomainName"	
-	echo "     GithubToken: $theGithubToken"	
+	echo "     DomainName: $theDomainName"
 	echo "     ClusterName: $theClusterName"
 	echo ""
 	
