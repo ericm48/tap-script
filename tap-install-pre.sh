@@ -134,12 +134,6 @@ function load_params() {
 		theClusterName="$TS_CLUSTER_NAME"
   fi
 
-  if [[ -z $TS_TAP_VERSION ]]; then
-		read -p "Enter the TAP Version: " theTAPVersion
-	else
-		theAzureRegion="$TS_TAP_VERSION"
-  fi
-
   if [[ -z $TS_TAP_REGISTRY_HOSTNAME ]]; then
 		read -p "Enter the TAP Registry HostName: " theTAPRegistryHostName
 	else
@@ -164,6 +158,11 @@ function load_params() {
 		theTAPRegistryPassWord="$TS_TAP_REGISTRY_PASSWORD"
   fi
 
+  if [[ -z $TS_TAP_VERSION ]]; then
+		read -p "Enter the TAP Version: " theTAPVersion
+	else
+		theTAPVersion="$TS_TAP_VERSION"
+  fi
 
 	if [[  "$theCloud" == "AKS" ]]; then
 
