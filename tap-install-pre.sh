@@ -751,10 +751,10 @@ function create_tap_registry_secret()
 	echo "######### Creating The TAP Registry Secret ############"
 	echo " For Repo: $theTAPRegistryHostName"
 	
-	tanzu secret registry add tap-registry --username $theTAPRegistryUserName \
-		--password $theTAPRegistryPassWord \
-		--server $theTAPRegistryHostName \ 
-		--export-to-all-namespaces --yes --namespace tap-install
+	tanzu secret registry add tap-registry --username ${theTAPRegistryUserName} \
+		--password ${theTAPRegistryPassWord} \
+		--server ${theTAPRegistryHostName} \ 
+		--export-to-all-namespaces --namespace tap-install
 	
 	tanzu secret registry list -n tap-install
 	
