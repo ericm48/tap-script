@@ -626,8 +626,17 @@ function install_tap_prereqs()
 	 # tar -xvf tanzu-cluster-essentials-linux-amd64-1.4.0.tgz -C $HOME/tanzu-cluster-essentials
    # tar -xvf tanzu-cluster-essentials-linux-amd64-1.3.0.tgz -C $HOME/tanzu-cluster-essentials 	      
 
-   export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:4b071c4ca187e727664012b4a197c22ebe3d3dd04938771330fa0db768c1e3a4
-   																																																		
+	 #
+	 # Set these eVARS!! The cluster-essential's install.sh below, requires these 
+	 # INSTALL_ eVars be set!  Even tho we already downloaded it...doh!
+	 #
+																																																			 
+	 export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5ce0dcf500b1292abd621147ac0b17cef4503d827aa1c06dffc744891fc36077' #v1.5.4!
+	 export INSTALL_REGISTRY_HOSTNAME=${theTanzuRegistryHostName}
+	 export INSTALL_REGISTRY_USERNAME=${theTanzuNetUserName}
+	 export INSTALL_REGISTRY_PASSWORD=${theTanzuNetPassWord}
+   
+   #export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:4b071c4ca187e727664012b4a197c22ebe3d3dd04938771330fa0db768c1e3a4' #v1.5.3
    #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256-61dff81ced8a604c82e88f4fb78f4eacb1bc27492cf6a07183702137210d6d74     
    #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2354688e46d4bb4060f74fca069513c9b42ffa17a0a6d5b0dbb81ed52242ea44
    #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9     
@@ -635,7 +644,9 @@ function install_tap_prereqs()
    echo "######## Installing Cluster-Essentials ###########"
    cd $HOME/tanzu-cluster-essentials
 
+	 #
 	 # More games with BAD install scripts..
+	 #
 	 printf 'yy' | ./install.sh
 
    echo "######## Installing Kapp ###########"
