@@ -19,9 +19,14 @@
 theCloud=""
 thePivNetToken=""
 
-theTanzuRegistryHostname=""
-theTanzuNetUsername=""
-theTanzuNetPassword=""
+theTanzuRegistryHostName=""
+theTanzuNetUserName=""
+theTanzuNetPassWord=""
+
+theTAPRegistryHostName=""
+theTAPRegistryRepoName=""
+theTAPRegistryUserName=""
+theTAPRegistryPassWord=""
 
 theDomainName=""
 theGithubToken=""
@@ -29,6 +34,8 @@ theClusterName=""
 theAzureSubscription=""
 theAzureRegion=""
 theResponse=""
+
+theTAPVersion=""
 
 function usage() {
 
@@ -39,25 +46,36 @@ function usage() {
   echo "Options: "
   echo ""
   echo "  -A number of parameters can be exported to evars to reduce cycle-time."
-  echo "   These are prefaced with TS_"
+  echo "   These are prefaced with TS_ below."  
   echo ""
+  echo "  Also MAKE SURE you are docker login'd to BOTH, BEFORE RUNNING:"
+  echo "     -registry.tanzu.vmware.com"
+  echo "     -your-target-registry"
+  echo ""
+  echo ""  
   
   echo "TS_ Variables:"
-
-
 	echo "     export TS_TARGET_CLOUD='AKS'"
 	echo "     export TS_PIVNET_TOKEN='-the-token-'"
 	echo ""	
+	
 	echo "     export TS_TANZU_REGISTRY_HOSTNAME='registry.tanzu.vmware.com'"
 	echo "     export TS_TANZU_USERNAME='me@somewhere.com'"
-	echo "     export TS_TANZU_PASSWORD='-the-password-'"
+	echo "     export TS_TANZU_PASSWORD='-the-password-'"	
+	echo ""	
 	
+	echo "     export TS_TAP_REGISTRY_HOSTNAME='ericmtaptestdemoacr.azurecr.io/ericmtaptestdemoacr'"
+	echo "     export TS_TAP_REGISTRY_REPO_NAME='ericm48'"	
+	echo "     export TS_TAP_REGISTRY_USERNAME='me@somewhere.com'"
+	echo "     export TS_TAP_REGISTRY_PASSWORD='-the-password-'"	
 	echo ""
+	
 	echo "     export TS_DOMAIN_NAME='my-dns.net'"
 	echo "     export TS_GITHUB_TOKEN='-the-token-'"
 	echo "     export TS_CLUSTER_NAME='tap-cluster-153'"
 	echo "     export TS_AZURE_SUBSCRIPTION='-the-token-'"
 	echo "     export TS_AZURE_REGION='eastus'"
+	echo "     export TS_TAP_VERSION='1.5.4'"	
 	echo ""
 	echo ""
 	echo ""		
@@ -81,21 +99,21 @@ function load_params() {
   fi
   
   if [[ -z $TS_TANZU_REGISTRY_HOSTNAME ]]; then
-		read -p "Enter the Tanzu Registry Hostname: " theTanzuRegistryHostname
+		read -p "Enter the Tanzu Registry HostName: " theTanzuRegistryHostName
 	else
-		theTanzuRegistryHostname="$TS_TANZU_REGISTRY_HOSTNAME"
+		theTanzuRegistryHostName="$TS_TANZU_REGISTRY_HOSTNAME"
   fi
 
   if [[ -z $TS_TANZU_USERNAME ]]; then
-		read -p "Enter the Tanzu network username: " theTanzuNetUsername
+		read -p "Enter the Tanzu network username: " theTanzuNetUserName
 	else
-		theTanzuNetUsername="$TS_TANZU_USERNAME"
+		theTanzuNetUserName="$TS_TANZU_USERNAME"
   fi
 
   if [[ -z $TS_TANZU_PASSWORD ]]; then
-		read -p "Enter the Tanzu network password: " theTanzuNetPassword
+		read -p "Enter the Tanzu network password: " theTanzuNetPassWord
 	else
-		theTanzuNetPassword="$TS_TANZU_PASSWORD"
+		theTanzuNetPassWord="$TS_TANZU_PASSWORD"
   fi
 
   if [[ -z $TS_DOMAIN_NAME ]]; then
@@ -116,6 +134,37 @@ function load_params() {
 		theClusterName="$TS_CLUSTER_NAME"
   fi
 
+  if [[ -z $TS_TAP_VERSION ]]; then
+		read -p "Enter the TAP Version: " theTAPVersion
+	else
+		theAzureRegion="$TS_TAP_VERSION"
+  fi
+
+  if [[ -z $TS_TAP_REGISTRY_HOSTNAME ]]; then
+		read -p "Enter the TAP Registry HostName: " theTAPRegistryHostName
+	else
+		theTAPRegistryHostName="$TS_TAP_REGISTRY_HOSTNAME"
+  fi
+
+  if [[ -z $TS_TAP_REGISTRY_REPO_NAME ]]; then
+		read -p "Enter the TAP Registry RepoName: " theTAPRegistryRepoName
+	else
+		theTAPRegistryRepoName="$TS_TAP_REGISTRY_REPO_NAME"
+  fi
+
+  if [[ -z $TS_TAP_REGISTRY_USERNAME ]]; then
+		read -p "Enter the TAP Registry UserName: " theTAPRegistryUserName
+	else
+		theTAPRegistryUserName="$TS_TAP_REGISTRY_USERNAME"
+  fi
+
+  if [[ -z $TS_TAP_REGISTRY_PASSWORD ]]; then
+		read -p "Enter the TAP Registry PassWord: " theTAPRegistryPassWord
+	else
+		theTAPRegistryPassWord="$TS_TAP_REGISTRY_PASSWORD"
+  fi
+
+
 	if [[  "$theCloud" == "AKS" ]]; then
 
 	  if [[ -z $TS_AZURE_SUBSCRIPTION ]]; then
@@ -130,6 +179,7 @@ function load_params() {
 			theAzureRegion="$TS_AZURE_REGION"
 	  fi
 
+
 	fi
   
 }
@@ -141,13 +191,14 @@ function display_params() {
 	echo "     TargetCloud: $theCloud"
 	echo "     PivNetToken: $thePivNetToken"	
 
-	echo "     TanzuNetRegistryHostname: $theTanzuRegistryHostname"	
-	echo "     TanzuNetUsername: $theTanzuNetUsername"	
-	echo "     TanzuNetPassword: ***"	# theTanzuNetPassword
+	echo "     TanzuNetRegistryHostName: $theTanzuRegistryHostName"	
+	echo "     TanzuNetUserName: $theTanzuNetUserName"	
+	echo "     TanzuNetPassWord: ***"	# theTanzuNetPassWord
 	
 	echo "     DomainName: $theDomainName"	
 	echo "     GithubToken: $theGithubToken"	
 	echo "     ClusterName: $theClusterName"
+	echo "      TAPVersion: $theTAPVersion"
 	
 	if [[  "$theCloud" == "AKS" ]]; then	
 	
@@ -167,7 +218,6 @@ function display_params() {
 	read -p "Press ENTER to proceed or ctrl-c to end." theResponse
 
 }
-
 	
 function install_aks()
 {	
@@ -176,14 +226,12 @@ function install_aks()
 	 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
    echo "#########################################"
    echo "################ AZ CLI version #####################"
-   az --version
-   
+   az --version   
 
    echo "#####################################################################################################"
    echo "#############  Authenticate to AZ cli by following the screen Instructions below #################"
    echo "#####################################################################################################"
 	 az login
-
    
    echo "#########################################"
    echo "Resource group created with name eric-tap-east-rg in region and the subscription mentioned above"
@@ -233,7 +281,7 @@ function install_aks()
 		   			acrpassword=$acrpassword1
 	        fi
    else
-      echo "Password Updated in tap values file"
+      echo "PassWord Updated in tap values file"
    fi
    
    echo "######### Preparing the tap-values file ##########"
@@ -244,8 +292,11 @@ function install_aks()
    sed -i -r "s/repopassword/$acrpassword/g" "$HOME/tap-script/tap-values.yaml"
    sed -i -r "s/domainname/$domainname/g" "$HOME/tap-script/tap-values.yaml"
    sed -i -r "s/githubtoken/$githubtoken/g" "$HOME/tap-script/tap-values.yaml"
-   echo "#####################################################################################################"
+
+   echo "####################################################################"
    echo "########### Creating Secrets in tap-install namespace  #############"
+   echo "####################################################################"
+      
    kubectl create ns tap-install
    kubectl create secret docker-registry registry-credentials --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
    kubectl create secret docker-registry image-secret --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
@@ -546,20 +597,23 @@ function install_tap_prereqs()
    chmod +x pivnet-linux-amd64-3.0.1
    sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
        
-   echo "########## Installing Tanzu CLI  #############"
+   echo "########## Downloading Tanzu Cluster Essentials #############"
    pivnet login --api-token=${thePivNetToken}
 
-   #pivnet download-product-files --product-slug=tanzu-cluster-essentials --release-version=1.6.1 --product-file-id=1358494
 
-   pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.3' --product-file-id='1553881'
+   pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id=1583335
 
+   #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=1.6.1 --product-file-id=1358494   
+   #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.3' --product-file-id='1553881'
    #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
    #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
    
+   rm -rfv $HOME/tanzu-cluster-essentials
    mkdir $HOME/tanzu-cluster-essentials
 	 
-	 tar -xvf tanzu-cluster-essentials-linux-amd64-1.5.3.tgz -C $HOME/tanzu-cluster-essentials
-
+	 tar -xvf tanzu-cluster-essentials-linux-amd64-"$theTAPVersion".tgz -C $HOME/tanzu-cluster-essentials
+	 
+	 # tar -xvf tanzu-cluster-essentials-linux-amd64-1.5.3.tgz -C $HOME/tanzu-cluster-essentials
 	 # tar -xvf tanzu-cluster-essentials-linux-amd64-1.4.0.tgz -C $HOME/tanzu-cluster-essentials
    # tar -xvf tanzu-cluster-essentials-linux-amd64-1.3.0.tgz -C $HOME/tanzu-cluster-essentials 	      
 
@@ -568,10 +622,6 @@ function install_tap_prereqs()
    #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256-61dff81ced8a604c82e88f4fb78f4eacb1bc27492cf6a07183702137210d6d74     
    #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2354688e46d4bb4060f74fca069513c9b42ffa17a0a6d5b0dbb81ed52242ea44
    #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9     
-
-   export INSTALL_REGISTRY_USERNAME=$theTanzuNetUsername
-   export INSTALL_REGISTRY_PASSWORD=$theTanzuNetPassword
-   export INSTALL_REGISTRY_HOSTNAME=$theTanzuRegistryHostname
    
    echo "######## Installing Cluster-Essentials ###########"
    cd $HOME/tanzu-cluster-essentials
@@ -584,14 +634,23 @@ function install_tap_prereqs()
    sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
    echo "#################################"
    kapp version
-	 
-	 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'
-	 
+   
+}	# End of install_tap_prereqs
+
+
+function install_tanzu_cli_pivnet()
+{
+
+   echo "######## Installing Tanzu-CLI From Pivnet ###########"
+
+	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'	 
 	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1404618
 	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
    #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
-
-   mkdir $HOME/tanzu     
+   
+   rm -rfv $HOME/tanzu     
+   mkdir $HOME/tanzu
+   
    tar -xvf tanzu-framework-linux-amd64-v0.28.1.3.tar -C $HOME/tanzu
           
    #tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
@@ -606,9 +665,47 @@ function install_tap_prereqs()
 	 #sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu
 	 
    tanzu version
+   
    tanzu plugin install --local cli all
    tanzu plugin list
-   
+
+}
+
+function install_tanzu_cli_pkg()
+{
+
+  echo "######## Installing Tanzu-CLI From Package-Mgr ###########"
+  
+	sudo mkdir -p /etc/apt/keyrings/
+	sudo apt-get update
+	sudo apt-get install -y ca-certificates curl gpg
+	
+	curl -fsSL https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub | sudo gpg --yes --dearmor -o /etc/apt/keyrings/tanzu-archive-keyring.gpg
+	echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/tanzu-archive-keyring.gpg] https://storage.googleapis.com/tanzu-cli-os-packages/apt tanzu-cli-jessie main" | sudo tee /etc/apt/sources.list.d/tanzu.list
+	sudo apt-get update
+	sudo apt-get install -y tanzu-cli
+
+	cp /usr/bin/tanzu /usr/local/bin/tanzu
+  tanzu version
+	
+}
+
+function install_tanzu_pluginz()
+{
+
+  echo "######## Installing Tanzu-Plugins ###########"
+  
+  tanzu plugin group search --show-details
+  tanzu plugin group search --name vmware-tanzu/default --show-details
+  tanzu plugin install --group vmware-tap/default:v"$theTAPVersion"
+  tanzu plugin group get vmware-tap/default:v"$theTAPVersion"
+  
+  tanzu plugin list
+
+}
+
+function install_otherz()
+{
    echo "######### Installing Docker ############"
    sudo apt-get update
    sudo apt-get install -y ca-certificates curl  gnupg  lsb-release
@@ -621,18 +718,51 @@ function install_tap_prereqs()
 
    echo "####### Verify JQ Version  ###########"
    sudo apt-get install -y jq
+   jq --version
+}
 
-   export INSTALL_REGISTRY_USERNAME=$theTanzuNetUsername
-   export INSTALL_REGISTRY_PASSWORD=$theTanzuNetPassword
-   export INSTALL_REGISTRY_HOSTNAME=$theTanzuRegistryHostname
-   
-   tanzu secret registry add tap-registry --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} --server ${INSTALL_REGISTRY_HOSTNAME} --export-to-all-namespaces --yes --namespace tap-install
-   
-   #echo "#####################################################################################################"
-   #echo "########### Rebooting #############"
-   #sudo reboot
-   
-}	# End of install_tap_prereqs
+
+function create_tap_registry_secret()
+{   
+	echo "######### DELETING PREVIOUS TAP Registry Secret ############"  
+	  
+	yes | tanzu secret registry delete tap-registry --namespace tap-install   
+	
+	echo "######### Creating The TAP Registry Secret ############"
+	echo " For Repo: $theTAPRegistryHostName"
+	
+	yes | tanzu secret registry add tap-registry --username $theTAPRegistryUserName \
+	     --password $theTAPRegistryPassWord \
+	     --server $theTAPRegistryHostName \ 
+	     --export-to-all-namespaces --yes --namespace tap-install
+	
+	tanzu secret registry list -n tap-install
+	
+}
+
+function copy_tap_packages()
+{
+
+	# better be docker login'd into source registry
+	# better be docker login'd into target registry
+
+  echo "######### *** WARNING: You better be docker log'd into 2X !!! ############"  
+	
+  echo "######### Adding TAP Registry As TAP Repository ############"  
+	 
+	tanzu package repository add tanzu-tap-repository \
+	  --url ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages:${theTAPVersion} \
+	  --namespace tap-install
+
+  echo "######### Copying TAP Packages To TAP Registry ############"  
+
+  imgpkg copy --include-non-distributable-layers -b \
+  	${theTanzuRegistryHostName}/tanzu-application-platform/tap-packages:${theTAPVersion} \
+  	--to-repo ${theTanzuRegistryHostName}/${theTanzuRepoName}/tap-packages
+
+}
+
+
 
 #
 # Main
@@ -662,6 +792,14 @@ function install_tap_prereqs()
 	fi
 	
 	install_tap_prereqs
+	
+	install_tanzu_cli_pkg
+	
+	install_tanzu_pluginz
+	
+	install_tanzu_otherz  
+	
+	create_registry_secret	
 	
 	cd $currentDir
 
