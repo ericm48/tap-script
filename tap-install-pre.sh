@@ -806,7 +806,7 @@ function copy_tap_packages()
 	
 	install_tanzu_pluginz
 	
-	install_tanzu_otherz  
+	install_otherz  
 	
 	create_registry_secret	
 	
