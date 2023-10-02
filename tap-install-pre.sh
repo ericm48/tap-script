@@ -238,7 +238,7 @@ function install_aks()
    az --version   
 
    echo "#####################################################################################################"
-   echo "#############  Authenticate to AZ cli by following the screen Instructions below #################"
+   echo "#############  Authenticate to AZ cli by following the screen Instructions below ####################"
    echo "#####################################################################################################"
 	 az login
    
@@ -601,59 +601,62 @@ EOF
 
 function install_tap_prereqs()
 {
-   echo "############# Installing Pivnet CLI ###########"
-   wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
-   chmod +x pivnet-linux-amd64-3.0.1
-   sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
-       
-   echo "########## Downloading Tanzu Cluster Essentials #############"
-   pivnet login --api-token=${thePivNetToken}
-
-
-   pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id=1583335
-
-   #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=1.6.1 --product-file-id=1358494   
-   #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.3' --product-file-id='1553881'
-   #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
-   #pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
+	echo "############# Installing Pivnet CLI ###########"
+	wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
+	chmod +x pivnet-linux-amd64-3.0.1
+	sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
+	   
+	echo "########## Downloading Tanzu Cluster Essentials #############"
+	pivnet login --api-token=${thePivNetToken}
+	
+	
+	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id=1583335
+	
+	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=1.6.1 --product-file-id=1358494   
+	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.3' --product-file-id='1553881'
+	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
+	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
+	
+	rm -rfv $HOME/tanzu-cluster-essentials
+	mkdir $HOME/tanzu-cluster-essentials
+	
+	tar -xvf tanzu-cluster-essentials-linux-amd64-"$theTAPVersion".tgz -C $HOME/tanzu-cluster-essentials
+	
+	# tar -xvf tanzu-cluster-essentials-linux-amd64-1.5.3.tgz -C $HOME/tanzu-cluster-essentials
+	# tar -xvf tanzu-cluster-essentials-linux-amd64-1.4.0.tgz -C $HOME/tanzu-cluster-essentials
+	# tar -xvf tanzu-cluster-essentials-linux-amd64-1.3.0.tgz -C $HOME/tanzu-cluster-essentials 	      
+	
+	
+	#export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:4b071c4ca187e727664012b4a197c22ebe3d3dd04938771330fa0db768c1e3a4' #v1.5.3
+	#export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256-61dff81ced8a604c82e88f4fb78f4eacb1bc27492cf6a07183702137210d6d74     
+	#export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2354688e46d4bb4060f74fca069513c9b42ffa17a0a6d5b0dbb81ed52242ea44
+	#export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9     
    
-   rm -rfv $HOME/tanzu-cluster-essentials
-   mkdir $HOME/tanzu-cluster-essentials
-	 
-	 tar -xvf tanzu-cluster-essentials-linux-amd64-"$theTAPVersion".tgz -C $HOME/tanzu-cluster-essentials
-	 
-	 # tar -xvf tanzu-cluster-essentials-linux-amd64-1.5.3.tgz -C $HOME/tanzu-cluster-essentials
-	 # tar -xvf tanzu-cluster-essentials-linux-amd64-1.4.0.tgz -C $HOME/tanzu-cluster-essentials
-   # tar -xvf tanzu-cluster-essentials-linux-amd64-1.3.0.tgz -C $HOME/tanzu-cluster-essentials 	      
-
-	 #
-	 # Set these eVARS!! The cluster-essential's install.sh below, requires these 
-	 # INSTALL_ eVars be set!  Even tho we already downloaded it...doh!
-	 #
-																																																			 
-	 export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5ce0dcf500b1292abd621147ac0b17cef4503d827aa1c06dffc744891fc36077' #v1.5.4!
-	 export INSTALL_REGISTRY_HOSTNAME=${theTanzuRegistryHostName}
-	 export INSTALL_REGISTRY_USERNAME=${theTanzuNetUserName}
-	 export INSTALL_REGISTRY_PASSWORD=${theTanzuNetPassWord}
    
-   #export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:4b071c4ca187e727664012b4a197c22ebe3d3dd04938771330fa0db768c1e3a4' #v1.5.3
-   #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256-61dff81ced8a604c82e88f4fb78f4eacb1bc27492cf6a07183702137210d6d74     
-   #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2354688e46d4bb4060f74fca069513c9b42ffa17a0a6d5b0dbb81ed52242ea44
-   #export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9     
+	#
+	# Set these eVARS!! The cluster-essential's install.sh below, requires these 
+	# INSTALL_ eVars be set!  Even tho we already downloaded it...doh!
+	#
+																																																		 
+	export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5ce0dcf500b1292abd621147ac0b17cef4503d827aa1c06dffc744891fc36077' #v1.5.4!
+	export INSTALL_REGISTRY_HOSTNAME=${theTanzuRegistryHostName}
+	export INSTALL_REGISTRY_USERNAME=${theTanzuNetUserName}
+	export INSTALL_REGISTRY_PASSWORD=${theTanzuNetPassWord}
    
-   echo "######## Installing Cluster-Essentials ###########"
-   cd $HOME/tanzu-cluster-essentials
+	echo "######## Installing Cluster-Essentials ###########"
+	cd $HOME/tanzu-cluster-essentials
+	
+	#
+	# More games with BAD install scripts..
+	#
+	printf 'yy' | ./install.sh
+	
+	echo "######## Installing Kapp ###########"
+	sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
+	sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
+	echo "#################################"
+	kapp version
 
-	 #
-	 # More games with BAD install scripts..
-	 #
-	 printf 'yy' | ./install.sh
-
-   echo "######## Installing Kapp ###########"
-   sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
-   sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
-   echo "#################################"
-   kapp version
    
 }	# End of install_tap_prereqs
 
@@ -744,20 +747,22 @@ function install_otherz()
 
 function create_tap_registry_secret()
 {   
+
 	echo "######### DELETING PREVIOUS TAP Registry Secret ############"  
 	  
-	yes | tanzu secret registry delete tap-registry --namespace tap-install   
+	yes | tanzu secret registry delete tap-registry --namespace tap-install
 	
+	echo ""
 	echo "######### Creating The TAP Registry Secret ############"
 	echo " For Repo: $theTAPRegistryHostName"
 	
-	tanzu secret registry add tap-registry --username ${theTAPRegistryUserName} \
-		--password ${theTAPRegistryPassWord} \
-		--server ${theTAPRegistryHostName} \ 
-		--export-to-all-namespaces --namespace tap-install
+	tanzu secret registry add tap-registry \
+	  --username ${theTAPRegistryUserName} --password ${theTAPRegistryPassWord} \
+		--server ${theTAPRegistryHostName} \
+		--export-to-all-namespaces --yes --namespace tap-install
 	
 	tanzu secret registry list -n tap-install
-	
+		
 }
 
 function copy_tap_packages()
@@ -798,6 +803,11 @@ function copy_tap_packages()
 
 	load_params
   display_params
+
+
+	create_tap_registry_secret	
+	
+	exit 23	
 
 	if [[ "$theCloud" == "AKS" ]]; then
 		install_aks
