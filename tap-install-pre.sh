@@ -231,86 +231,93 @@ function display_params() {
 function install_aks()
 {	
 	 
-	 echo "#################  Installing AZ cli #####################"
-	 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-   echo "#########################################"
-   echo "################ AZ CLI version #####################"
-   az --version   
-
-   echo "#####################################################################################################"
-   echo "#############  Authenticate to AZ cli by following the screen Instructions below ####################"
-   echo "#####################################################################################################"
-	 az login
+	echo "#################  Installing AZ cli #####################"
+	curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+	echo "##########################################################"
+	echo "################# AZ CLI version #########################"
+	az --version   
+	
+	echo "#####################################################################################################"
+	echo "#############  Authenticate to AZ cli by following the screen Instructions below ####################"
+	echo "#####################################################################################################"
+	az login
+	
+	echo "#########################################"
+	echo "Resource group created with name eric-tap-east-rg in region and the subscription mentioned above"
+	echo "#########################################"
+	az group create --name eric-tap-east-rg --location $theAzureRegion --subscription $theAzureSubscription
+	
+	echo "#########################################"
+	echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
+	echo "#########################################"
+	az aks create --resource-group eric-tap-east-rg --name $theClusterName --subscription $theAzureSubscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
+	
+	echo "############### Created AKS Cluster ###############"
+	echo "############### Install kubectl ##############"
+	
+	sudo az aks install-cli
+	
+	echo "############### Set the context ###############"
+	az account set --subscription $theAzureSubscription
+	az aks get-credentials --resource-group eric-tap-east-rg --name $theClusterName
+	
+	echo "############## Verify the nodes #################"
+	echo "#####################################################################################################"
+	kubectl get nodes
+	
+	echo "#####################################################################################################"
+	echo "###### Create RG for Repo  ######"
+	az group create --name eric-tap-workshop-imagerepo-rg --location $theAzureRegion
+	
+	echo "####### Create container registry  ############"
+	echo "#####################################################################################################"
+	az acr create --resource-group eric-tap-workshop-imagerepo-rg --name ericmtaptestdemoacr --sku Standard
+	
+	echo "####### Fetching acr Admin credentials ##########"
+	az acr update -n ericmtaptestdemoacr --admin-enabled true
+	acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
+	acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
+	acrpassword=$(az acr credential show --name ericmtaptestdemoacr --query passwords[0].value -o tsv)
+	if grep -q "/"  <<< "$acrpassword";
+	   then
+		    acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
+		    if grep -q "/"  <<< "$acrpassword1";
+		      then
+	      	   echo "##########################################################################"
+	 					 echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
+	        	 echo "###########################################################################"
+				else
+	   			acrpassword=$acrpassword1
+	      fi
+	else
+	  echo "PassWord Updated in tap values file"
+	fi
+	
+	echo "######### Preparing the tap-values file ##########"
+	sed -i -r "s/tanzunetusername/$tanzunetusername/g" "$HOME/tap-script/tap-values.yaml"
+	sed -i -r "s/tanzunetpassword/$tanzunetpassword/g" "$HOME/tap-script/tap-values.yaml"
+	sed -i -r "s/registryname/$acrloginserver/g" "$HOME/tap-script/tap-values.yaml"
+	sed -i -r "s/repousername/$acrusername/g" "$HOME/tap-script/tap-values.yaml"
+	sed -i -r "s/repopassword/$acrpassword/g" "$HOME/tap-script/tap-values.yaml"
+	sed -i -r "s/domainname/$domainname/g" "$HOME/tap-script/tap-values.yaml"
+	sed -i -r "s/githubtoken/$githubtoken/g" "$HOME/tap-script/tap-values.yaml"
+	
+	echo "########### Creating namespace tap-install #############"      
+	  
+	kubectl create ns tap-install
+	
+	echo "####################################################################"
+	echo "########### Creating Secrets in tap-install namespace  #############"
+	echo "####################################################################"
    
-   echo "#########################################"
-   echo "Resource group created with name eric-tap-east-rg in region and the subscription mentioned above"
-   echo "#########################################"
-	 az group create --name eric-tap-east-rg --location $theAzureRegion --subscription $theAzureSubscription
-
-   echo "#########################################"
-	 echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
-   echo "#########################################"
-   az aks create --resource-group eric-tap-east-rg --name $theClusterName --subscription $theAzureSubscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
-
-   echo "############### Created AKS Cluster ###############"
-	 echo "############### Install kubectl ##############"
-	 
-	 sudo az aks install-cli
-	 
-	 echo "############### Set the context ###############"
-	 az account set --subscription $theAzureSubscription
-	 az aks get-credentials --resource-group eric-tap-east-rg --name $theClusterName
-	 
-	 echo "############## Verify the nodes #################"
-   echo "#####################################################################################################"
-	 kubectl get nodes
+	kubectl delete secret registry-credentials -n tap-install
+	kubectl create secret docker-registry registry-credentials --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
    
-   echo "#####################################################################################################"
-	 echo "###### Create RG for Repo  ######"
-	 az group create --name eric-tap-workshop-imagerepo-rg --location $theAzureRegion
-	 
-	 echo "####### Create container registry  ############"
-   echo "#####################################################################################################"
-	 az acr create --resource-group eric-tap-workshop-imagerepo-rg --name ericmtaptestdemoacr --sku Standard
-	 
-	 echo "####### Fetching acr Admin credentials ##########"
-	 az acr update -n ericmtaptestdemoacr --admin-enabled true
-   acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
-   acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
-   acrpassword=$(az acr credential show --name ericmtaptestdemoacr --query passwords[0].value -o tsv)
-   if grep -q "/"  <<< "$acrpassword";
-       then
-			    acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
-			    if grep -q "/"  <<< "$acrpassword1";
-			      then
-          	   echo "##########################################################################"
-	   					 echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
-            	 echo "###########################################################################"
-    			else
-		   			acrpassword=$acrpassword1
-	        fi
-   else
-      echo "PassWord Updated in tap values file"
-   fi
-   
-   echo "######### Preparing the tap-values file ##########"
-   sed -i -r "s/tanzunetusername/$tanzunetusername/g" "$HOME/tap-script/tap-values.yaml"
-   sed -i -r "s/tanzunetpassword/$tanzunetpassword/g" "$HOME/tap-script/tap-values.yaml"
-   sed -i -r "s/registryname/$acrloginserver/g" "$HOME/tap-script/tap-values.yaml"
-   sed -i -r "s/repousername/$acrusername/g" "$HOME/tap-script/tap-values.yaml"
-   sed -i -r "s/repopassword/$acrpassword/g" "$HOME/tap-script/tap-values.yaml"
-   sed -i -r "s/domainname/$domainname/g" "$HOME/tap-script/tap-values.yaml"
-   sed -i -r "s/githubtoken/$githubtoken/g" "$HOME/tap-script/tap-values.yaml"
-
-   echo "####################################################################"
-   echo "########### Creating Secrets in tap-install namespace  #############"
-   echo "####################################################################"
-      
-   kubectl create ns tap-install
-   kubectl create secret docker-registry registry-credentials --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
-   kubectl create secret docker-registry image-secret --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
+	kubectl delete secret image-secret -n tap-install   
+  kubectl create secret docker-registry image-secret --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
 
 }	 # End of install_aks
+
 
 function install_aws()
 {
@@ -803,11 +810,6 @@ function copy_tap_packages()
 
 	load_params
   display_params
-
-
-	create_tap_registry_secret	
-	
-	exit 23	
 
 	if [[ "$theCloud" == "AKS" ]]; then
 		install_aks
