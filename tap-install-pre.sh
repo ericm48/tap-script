@@ -222,6 +222,11 @@ function display_params() {
 
 	fi
 	
+  echo "  *** Also MAKE SURE you are docker login'd to BOTH, BEFORE RUNNING: ***"
+  echo "     -registry.tanzu.vmware.com"
+  echo "     -your-target-registry"
+  echo ""
+	
 	echo ""
 	echo ""
 	
