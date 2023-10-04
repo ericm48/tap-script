@@ -221,7 +221,9 @@ function display_params() {
 		echo "Be ready to enter a code for Azure Login!"
 
 	fi
-	
+
+	echo ""
+	echo ""	
   echo "  *** Also MAKE SURE you are docker login'd to BOTH, BEFORE RUNNING: ***"
   echo "     -registry.tanzu.vmware.com"
   echo "     -your-target-registry"
