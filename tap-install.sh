@@ -18,6 +18,9 @@ tanzu package repository get tanzu-tap-repository --namespace tap-install
 echo "############# List the available packages ####################"
 tanzu package available list --namespace tap-install
 
+echo "############# Tanzu Application Platform Package Repository Status ####################"
+tanzu package repository list -A
+
 echo "############### TAP ${TAP_VERSION} Install   ##################"
 tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file ./tap-values-${TAP_VERSION}-acr.yaml -n tap-install
 
