@@ -6,10 +6,13 @@ kubectl create namespace dev1
 
 tanzu secret registry list -n tap-install
 
-echo "############# Adding Tanzu Application Platform package repository to the cluster ####################"
-tanzu package repository add tanzu-tap-repository --url $INSTALL_REGISTRY_HOSTNAME/tanzu-application-platform/tap-packages:${TAP_VERSION} --namespace tap-install
 
-#tanzu package repository add tanzu-tap-repository --url $INSTALL_REGISTRY_HOSTNAME/tanzu-application-platform/tap-packages:1.5.3 --namespace tap-install
+echo "############# DELETEING PREVIOUS Tanzu Application Platform package repository to the cluster ####################"
+tanzu package repository delete tanzu-tap-repository -n tap-install --yes
+
+echo "############# Adding Tanzu Application Platform package repository to the cluster ####################"
+tanzu package repository add tanzu-tap-repository --url $TS_TAP_REGISTRY_HOSTNAME/$TS_TAP_REGISTRY_REPO_NAME/tap-packages --namespace tap-install
+
 tanzu package repository get tanzu-tap-repository --namespace tap-install
 
 echo "############# List the available packages ####################"
@@ -18,14 +21,13 @@ tanzu package available list --namespace tap-install
 echo "############### TAP ${TAP_VERSION} Install   ##################"
 tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file ./tap-values-${TAP_VERSION}-acr.yaml -n tap-install
 
-
-echo "############### TAP ${TAP_VERSION} Install   ##################"
-#tanzu package install tap -p tap.tanzu.vmware.com -v 1.3.2 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
-
+# HERE DUDE! for now...til I figure out the rest below...
+exit 1010
 
 tanzu package installed list -A
 
 reconcilestat=$(tanzu package installed list -A -o json | jq ' .[] | select(.status == "Reconcile failed: Error (see .status.usefulErrorMessage for details)" or .status == "Reconciling")' | jq length | awk '{sum=sum+$0} END{print sum}')
+
 if [ $reconcilestat > '0' ];
     then
 	tanzu package installed list -A
@@ -62,8 +64,9 @@ if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
  then
    sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"
 else
-sed -i -r "s/lbip/$hostname/g" "$HOME/tap-script/tap-values.yaml"
+  sed -i -r "s/lbip/$hostname/g" "$HOME/tap-script/tap-values.yaml"
 fi
+
 tanzu package installed update tap --package-name tap.tanzu.vmware.com --version ${TAP_VERSION} -n tap-install -f $HOME/tap-script/tap-values.yaml
 tanzu package installed list -A
 
