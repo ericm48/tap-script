@@ -846,5 +846,7 @@ function copy_tap_packages()
 	
 	create_tap_registry_secret	
 	
+	copy_tap_packages	
+	
 	cd $currentDir
 
