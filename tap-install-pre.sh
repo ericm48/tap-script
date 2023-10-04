@@ -787,14 +787,13 @@ function copy_tap_packages()
 	  --url ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages:${theTAPVersion} \
 	  --namespace tap-install
 
-  echo "######### Copying TAP Packages To TAP Registry ############"  
 
 	# TanzuRegistry -> TAPRegistry
-
   # Naming: 
   #	./tap/tap-1.5.4/tap-packages
   # ./tap/tap-1.5.4/tap-workloads
 
+	echo "######### Copying TAP Packages To TAP Registry ############"  
   imgpkg copy --include-non-distributable-layers -b \
   	${theTanzuRegistryHostName}/tanzu-application-platform/tap-packages:${theTAPVersion} \
   	--to-repo ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages-${theTAPVersion}
