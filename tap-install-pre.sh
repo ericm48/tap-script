@@ -803,7 +803,7 @@ function copy_tap_packages()
 	echo "######### Copying TAP Packages To TAP Registry ############"  
   imgpkg copy --include-non-distributable-layers -b \
   	${theTanzuRegistryHostName}/tanzu-application-platform/tap-packages:${theTAPVersion} \
-  	--to-repo ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages-${theTAPVersion}
+  	--to-repo ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages
 
 }
 
