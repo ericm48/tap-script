@@ -49,7 +49,7 @@ function usage() {
   echo "  -A number of parameters can be exported to evars to reduce cycle-time."
   echo "   These are prefaced with TS_ below."  
   echo ""
-  echo "  Also MAKE SURE you are docker login'd to BOTH, BEFORE RUNNING:"
+  echo "  *** Also MAKE SURE you are docker login'd to BOTH, BEFORE RUNNING: ***"
   echo "     -registry.tanzu.vmware.com"
   echo "     -your-target-registry"
   echo ""
