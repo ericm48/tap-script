@@ -7,17 +7,19 @@ kubectl create namespace dev1
 tanzu secret registry list -n tap-install
 
 echo "############# Adding Tanzu Application Platform package repository to the cluster ####################"
-tanzu package repository add tanzu-tap-repository --url $INSTALL_REGISTRY_HOSTNAME/tanzu-application-platform/tap-packages:1.5.3 --namespace tap-install
+tanzu package repository add tanzu-tap-repository --url $INSTALL_REGISTRY_HOSTNAME/tanzu-application-platform/tap-packages:${TAP_VERSION} --namespace tap-install
+
+#tanzu package repository add tanzu-tap-repository --url $INSTALL_REGISTRY_HOSTNAME/tanzu-application-platform/tap-packages:1.5.3 --namespace tap-install
 tanzu package repository get tanzu-tap-repository --namespace tap-install
 
 echo "############# List the available packages ####################"
 tanzu package available list --namespace tap-install
 
-echo "############### TAP 1.5.3 Install   ##################"
-tanzu package install tap -p tap.tanzu.vmware.com -v 1.5.3 --values-file ./tap-values-1.5.3.yaml -n tap-install
+echo "############### TAP ${TAP_VERSION} Install   ##################"
+tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file ./tap-values-${TAP_VERSION}-acr.yaml -n tap-install
 
 
-#echo "############### TAP 1.3.2 Install   ##################"
+echo "############### TAP ${TAP_VERSION} Install   ##################"
 #tanzu package install tap -p tap.tanzu.vmware.com -v 1.3.2 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
 
 
@@ -45,16 +47,11 @@ if [ $reconcilestat > '0' ];
 else
 	ip=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
         sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"
-        tanzu package installed update tap --package-name tap.tanzu.vmware.com --version 1.3.2 -n tap-install -f $HOME/tap-script/tap-values.yaml
+        tanzu package installed update tap --package-name tap.tanzu.vmware.com --version ${TAP_VERSION} -n tap-install -f $HOME/tap-script/tap-values.yaml
 fi
 echo "############## Get the package install status #################"
 tanzu package installed get tap -n tap-install
 tanzu package installed list -A
-
-
-
-
-
 
 
 echo "############# Updating tap-values file with LB ip ################"
@@ -67,7 +64,7 @@ if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
 else
 sed -i -r "s/lbip/$hostname/g" "$HOME/tap-script/tap-values.yaml"
 fi
-tanzu package installed update tap --package-name tap.tanzu.vmware.com --version 1.3.2 -n tap-install -f $HOME/tap-script/tap-values.yaml
+tanzu package installed update tap --package-name tap.tanzu.vmware.com --version ${TAP_VERSION} -n tap-install -f $HOME/tap-script/tap-values.yaml
 tanzu package installed list -A
 
 echo "################ Cluster supply chain list #####################"
@@ -199,10 +196,12 @@ grype:
 EOF
 
 echo "################### Installing Grype Scanner ##############################"
-tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version 1.3.2  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
+tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version ${TAP_VERSION}  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
+
 echo "################### Creating workload ##############################"
 tanzu apps workload create tanzu-java-web-app  --git-repo https://github.com/Eknathreddy09/tanzu-java-web-app --git-branch main --type web --label apps.tanzu.vmware.com/has-tests=true --label app.kubernetes.io/part-of=tanzu-java-web-app  --type web -n tap-install --yes
 tanzu apps workload get tanzu-java-web-app -n tap-install
+
 echo "#######################################################################"
 echo "################ Monitor the progress #################################"
 echo "#######################################################################"
