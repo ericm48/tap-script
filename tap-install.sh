@@ -54,6 +54,7 @@ else
         sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"
         tanzu package installed update tap --package-name tap.tanzu.vmware.com --version ${TAP_VERSION} -n tap-install -f $HOME/tap-script/tap-values.yaml
 fi
+
 echo "############## Get the package install status #################"
 tanzu package installed get tap -n tap-install
 tanzu package installed list -A
@@ -63,6 +64,7 @@ echo "############# Updating tap-values file with LB ip ################"
 
 ip=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 hostname=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+
 if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
  then
    sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"

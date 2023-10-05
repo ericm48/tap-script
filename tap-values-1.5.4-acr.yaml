@@ -1,0 +1,109 @@
+---
+#
+# tap-values: 04-Oct-2023 For AKS tap-1.5.4 in dev1 namespace
+#
+# --name tap-cluster-154  --region us-east 
+#
+shared:
+  ingress_domain: "tap-154.ericm48.net"
+  image_registry:
+    project_path: "ericmtaptestdemoacr.azurecr.io/ericmtaptestdemoacr/tap-1.5.4/workloads"
+    secret:
+      name: registry-credentials
+      namespace: tap-install
+  kubernetes_version: "1.26.6"
+  
+ceip_policy_disclosed: true  # The value must be true for installation to succeed
+profile: full # Can take iterate, build, run, view.
+
+namespace_provisioner:
+  controller: true
+
+supply_chain: basic  # Can take testing, testing_scanning.
+
+ootb_templates:
+  iaas_auth: true
+
+ootb_supply_chain_basic:
+  registry:
+    server: "ericmtaptestdemoacr.azurecr.io" #"index.docker.io" "azecreric1.azurecr.io"
+    repository: "tap-1.5.4/workloads"
+  gitops:
+    ssh_secret: ""
+
+contour:
+  infrastructure_provider: azure
+  envoy:
+    service:
+      azure:
+        LBType: nlb
+
+
+buildservice:
+# kp_default_server: ericmtaptestdemoacr.azurecr.io
+  kp_default_repository: "ericmtaptestdemoacr.azurecr.io/ericmtaptestdemoacr/tap-1.5.4/build-service"
+  exclude_dependencies: false
+  kp_default_repository_secret:
+    name: registry-credentials
+    namespace: "tap-install"
+
+learningcenter:
+  ingressDomain: "learningcenter.tap-154.ericm48.net"
+
+ootb_delivery_basic:
+  service_account: default
+
+tap_gui:
+  service_type: LoadBalancer
+  ingressEnabled: "true"
+  ingressDomain: "tap-154.ericm48.net"
+  app_config:
+    supplyChain:
+      enablePlugin: true
+    auth:
+      allowGuestAccess: true
+    backend:
+      baseUrl: http://tap-gui.tap-154.ericm48.net
+      cors:
+        origin: http://tap-gui.tap-154.ericm48.net
+    app:
+      baseUrl: http://tap-gui.tap-154.ericm48.net
+    integrations:
+      github:
+      - host: github.com
+        token: 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
+    catalog:
+      rules:
+       - allow: [ Component, Domain, System, API, Group, User, Resource, Location, Template ]
+      locations:
+       - type: url
+         target: https://github.com/ericm48/tap/blob/master/yelb/catalog-info.yaml
+
+metadata_store:
+  ingressEnabled: true
+  ingressDomain: "tap-154.ericm48.net.buildit.services"
+  app_service_type: ClusterIP
+  ns_for_export_app_cert: "dev1" #testdev-ns"
+  #app_service_type: LoadBalancer # (optional) Defaults to LoadBalancer. Change to NodePort for distributions that don't support LoadBalancer  
+
+scanning:
+  metadataStore:
+    url: "" # Configuration is moved, so set this string to empty.
+
+accelerator:
+  server:
+    service_type: "ClusterIP"
+
+grype:
+  namespace: tap-workload # (optional) Defaults to default namespace.
+  targetImagePullSecret: "tap-registry"
+
+policy:
+  tuf_enabled: false # By default, TUF initialization and keyless verification are deactivated.
+
+#tap_telemetry:
+#  customer_entitlement_account_number: "CUSTOMER-ENTITLEMENT-ACCOUNT-NUMBER" # (Optional) Identify data for creating Tanzu Application Platform usage reports.
+
+cnrs:
+  domain_name: apps.tap-154.ericm48.net
+
