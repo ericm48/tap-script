@@ -1,3 +1,4 @@
+---
 apiVersion: carto.run/v1alpha1
 kind: Workload
 metadata:
@@ -15,7 +16,6 @@ spec:
       url: https://github.com/ericm48/tanzu-java-web-app
       ref:
         branch: main
-  env: 
+  env:
     - name: MY_VARIABLE
       value: "ValueFrom: workload.yaml"
-
