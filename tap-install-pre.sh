@@ -7,13 +7,17 @@
 #										-Cluster-Essentials
 #                   -TAP-Cli-Compoents
 #
-# -19-Sept-2023:     Do not trust the pivnet file-id's.  These tend to be wrong.
+# -19-Sept-2023:     TAP-1.5.4:
+#                    Do not trust the pivnet file-id's.  These tend to be wrong.
 # 									 Go out to: https://network.pivotal.io/products/tanzu-application-platform
 #                    Pull up the cluster-essentials or tap-cli, then goto the download link,
 #                    and copy it from there.  Same is true for the SHA.
 #
 
 # set -x
+
+# ToDo:
+# -Add kpack-cli download, install 0.12
 
 
 theCloud=""
