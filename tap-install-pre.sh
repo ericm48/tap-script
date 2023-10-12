@@ -761,6 +761,15 @@ function install_otherz()
    echo "####### Verify JQ Version  ###########"
    sudo apt-get install -y jq
    jq --version
+   
+   echo "######### Installing KPack v0.12.0 ############"   
+   wget "https://github.com/buildpacks-community/kpack-cli/releases/download/v0.12.0/kp-linux-amd64-0.12.0"
+   cp -f ./kp-linux-amd64-0.12.0 /usr/local/bin/kp
+   chmod +x /usr/local/bin/kp
+   
+   echo "######### Verify KPack Version  ###############"
+   kp version   
+   
 }
 
 
