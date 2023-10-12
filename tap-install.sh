@@ -81,6 +81,7 @@ tanzu apps cluster-supply-chain list
 echo "################ Developer namespace in tap-install #####################"
 
 cat <<EOF > developer.yaml
+---
 apiVersion: v1
 kind: Secret
 metadata:
@@ -207,10 +208,10 @@ echo "################### Installing Grype Scanner #############################
 tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version ${TAP_VERSION}  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
 
 echo "################### Creating workload ##############################"
-tanzu apps workload create tanzu-java-web-app  --git-repo https://github.com/Eknathreddy09/tanzu-java-web-app --git-branch main --type web --label apps.tanzu.vmware.com/has-tests=true --label app.kubernetes.io/part-of=tanzu-java-web-app  --type web -n tap-install --yes
-tanzu apps workload get tanzu-java-web-app -n tap-install
+tanzu -n dev1 apps workload create tanzu-java-web-app-aks -f workload-tanzu-java-web-app-aks.yaml
+tanzu -n dev1 apps workload get tanzu-java-web-app-aks
 
 echo "#######################################################################"
 echo "################ Monitor the progress #################################"
 echo "#######################################################################"
-tanzu apps workload tail tanzu-java-web-app --since 10m --timestamp -n tap-install
+tanzu -n dev1 apps workload tail tanzu-java-web-app-aks --since 10m --timestamp
