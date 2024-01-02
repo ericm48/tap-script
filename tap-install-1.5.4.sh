@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Tap install for version: 1.5.4
 
 echo "############# Create Target Namespace ####################"
 kubectl create namespace dev1
@@ -208,10 +209,16 @@ echo "################### Installing Grype Scanner #############################
 tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version ${TAP_VERSION}  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
 
 echo "################### Creating workload ##############################"
-tanzu -n dev1 apps workload create tanzu-java-web-app-aks -f workload-tanzu-java-web-app-aks.yaml
-tanzu -n dev1 apps workload get tanzu-java-web-app-aks
+#tanzu -n dev1 apps workload create tanzu-java-web-app-aks -f workload-tanzu-java-web-app-aks.yaml
+#tanzu -n dev1 apps workload get tanzu-java-web-app-aks
+
+tanzu -n default apps workload create tanzu-java-web-app-aks -f workload-tanzu-java-web-app-aks.yaml
+tanzu -n default apps workload get tanzu-java-web-app-aks
+
 
 echo "#######################################################################"
 echo "################ Monitor the progress #################################"
 echo "#######################################################################"
-tanzu -n dev1 apps workload tail tanzu-java-web-app-aks --since 10m --timestamp
+#tanzu -n dev1 apps workload tail tanzu-java-web-app-aks --since 10m --timestamp
+
+tanzu -n default apps workload tail tanzu-java-web-app-aks --since 10m --timestamp
