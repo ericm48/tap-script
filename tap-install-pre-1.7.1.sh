@@ -41,6 +41,7 @@ theAzureRegion=""
 theResponse=""
 
 theTAPVersion=""
+theFileIDClusterEssentials=""
 
 function usage() {
 
@@ -167,6 +168,12 @@ function load_params() {
 		read -p "Enter the TAP Version: " theTAPVersion
 	else
 		theTAPVersion="$TS_TAP_VERSION"
+  fi
+
+  if [[ -z $TS_FILEID_CLUSTER_ESSENTIALS ]]; then
+		read -p "Enter the FILEID for the ClusterEssentials Version: " theFileIDClusterEssentials
+	else
+		theFileIDClusterEssentials="$TS_FILEID_CLUSTER_ESSENTIALS"
   fi
 
 	if [[  "$theCloud" == "AKS" ]]; then
@@ -628,7 +635,7 @@ function install_tap_prereqs()
 	echo "########## Downloading Tanzu Cluster Essentials #############"
 	pivnet login --api-token=${thePivNetToken}
 	
-	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id=1643011
+	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id="$theFileIDClusterEssentials"
 	
 	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=1.6.1 --product-file-id=1358494   
 	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.3' --product-file-id='1553881'
