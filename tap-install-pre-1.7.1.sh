@@ -628,8 +628,7 @@ function install_tap_prereqs()
 	echo "########## Downloading Tanzu Cluster Essentials #############"
 	pivnet login --api-token=${thePivNetToken}
 	
-	
-	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id=1583335
+	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id=1643011
 	
 	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=1.6.1 --product-file-id=1358494   
 	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.3' --product-file-id='1553881'
@@ -838,14 +837,14 @@ function copy_tap_packages()
 	if [[ "$theCloud" == "GKE" ]]; then
 		install_gke			
 	fi
-	
+
+	install_otherz
+		
 	install_tap_prereqs
 	
 	install_tanzu_cli_pkg
 	
 	install_tanzu_pluginz
-	
-	install_otherz  
 	
 	create_tap_registry_secret	
 	
