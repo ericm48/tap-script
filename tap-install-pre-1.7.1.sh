@@ -651,6 +651,8 @@ function install_tap_prereqs()
 	# Set these eVARS!! The cluster-essential's install.sh below, requires these 
 	# INSTALL_ eVars be set!  Even tho we already downloaded it...doh!
 	#
+
+	# ToDo: Relo ClusterEssentials to my target registry..then run it.
 	
   export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5cf31921f79c16468cccc2c465fba928509fcdd0aa7e8b738b8dd2323058c58d' #v1.7.1!
 	export INSTALL_REGISTRY_HOSTNAME=${theTanzuRegistryHostName}
@@ -659,6 +661,8 @@ function install_tap_prereqs()
    
 	echo "######## Installing Cluster-Essentials ###########"
 	cd $HOME/tanzu-cluster-essentials
+	
+	kubectl create ns kapp-controller
 	
 	#
 	# More games with BAD install scripts..
