@@ -8,7 +8,7 @@ kubectl create namespace dev1
 tanzu secret registry list -n tap-install
 
 
-echo "############# DELETEING PREVIOUS Tanzu Application Platform package repository to the cluster ####################"
+echo "############# DELETING PREVIOUS Tanzu Application Platform package repository to the cluster ####################"
 tanzu package repository delete tanzu-tap-repository -n tap-install --yes
 
 echo "############# Adding Tanzu Application Platform package repository to the cluster ####################"

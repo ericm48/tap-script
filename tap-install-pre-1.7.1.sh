@@ -710,7 +710,6 @@ function install_tanzu_cli_pivnet()
 
 function install_tanzu_cli_pkg()
 {
-
   echo "######## Installing Tanzu-CLI From Package-Mgr ###########"
   
 	sudo mkdir -p /etc/apt/keyrings/
@@ -744,7 +743,8 @@ function install_tanzu_pluginz()
 
 function install_otherz()
 {
-   echo "######### Installing Docker ############"
+
+   echo "######### Installing Docker -LATEST ############"
    sudo apt-get update
    sudo apt-get install -y ca-certificates curl  gnupg  lsb-release
    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -754,18 +754,22 @@ function install_otherz()
    sudo apt-get install -y docker-ce docker-ce-cli containerd.io -y
    sudo usermod -aG docker $USER
 
-   echo "####### Verify JQ Version  ###########"
+   echo "######### Installing JQ -LATEST ############"
    sudo apt-get install -y jq
    jq --version
    
    echo "######### Installing KPack v0.12.0 ############"   
+   
    wget "https://github.com/buildpacks-community/kpack-cli/releases/download/v0.12.0/kp-linux-amd64-0.12.0"
    cp -f ./kp-linux-amd64-0.12.0 /usr/local/bin/kp
-   chmod +x /usr/local/bin/kp
-   
-   echo "######### Verify KPack Version  ###############"
+   chmod +x /usr/local/bin/kp  
    kp version   
    
+   echo "######### Installing SOPs v3.7.3 ############"   
+	 curl -LO https://github.com/getsops/sops/releases/download/v3.7.3/sops-v3.7.3.linux.amd64
+	 mv sops-v3.7.3.linux.amd64 /usr/local/bin/sops
+	 chmod +x /usr/local/bin/sops   
+   sops --version
 }
 
 
