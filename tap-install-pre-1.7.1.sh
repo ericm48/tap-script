@@ -654,7 +654,10 @@ function install_tap_prereqs()
 
 	# ToDo: Relo ClusterEssentials to my target registry..then run it.
 	
-  export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5cf31921f79c16468cccc2c465fba928509fcdd0aa7e8b738b8dd2323058c58d' #v1.7.1!
+  #export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5cf31921f79c16468cccc2c465fba928509fcdd0aa7e8b738b8dd2323058c58d' #v1.7.1 BAD?
+	
+	export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:ca8584ff2ad4a4cf7a376b72e84fd9ad84ac6f38305767cdfb12309581b521f5'  #v1.7.1
+	
 	export INSTALL_REGISTRY_HOSTNAME=${theTanzuRegistryHostName}
 	export INSTALL_REGISTRY_USERNAME=${theTanzuNetUserName}
 	export INSTALL_REGISTRY_PASSWORD=${theTanzuNetPassWord}
