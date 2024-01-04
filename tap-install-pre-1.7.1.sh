@@ -859,6 +859,8 @@ function copy_tap_packages()
 		
 	install_tap_prereqs
 	
+	exit 4444
+	
 	install_tanzu_cli_pkg
 	
 	install_tanzu_pluginz
