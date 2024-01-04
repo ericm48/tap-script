@@ -651,8 +651,8 @@ function install_tap_prereqs()
 	# Set these eVARS!! The cluster-essential's install.sh below, requires these 
 	# INSTALL_ eVars be set!  Even tho we already downloaded it...doh!
 	#
-																																																		 
-	export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5ce0dcf500b1292abd621147ac0b17cef4503d827aa1c06dffc744891fc36077' #v1.5.4!
+	
+  export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5cf31921f79c16468cccc2c465fba928509fcdd0aa7e8b738b8dd2323058c58d' #v1.7.1!
 	export INSTALL_REGISTRY_HOSTNAME=${theTanzuRegistryHostName}
 	export INSTALL_REGISTRY_USERNAME=${theTanzuNetUserName}
 	export INSTALL_REGISTRY_PASSWORD=${theTanzuNetPassWord}
@@ -675,38 +675,38 @@ function install_tap_prereqs()
 }	# End of install_tap_prereqs
 
 
-function install_tanzu_cli_pivnet()
-{
-
-   echo "######## Installing Tanzu-CLI From Pivnet ###########"
-
-	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'	 
-	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1404618
-	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
-   #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
-   
-   rm -rfv $HOME/tanzu     
-   mkdir $HOME/tanzu
-   
-   tar -xvf tanzu-framework-linux-amd64-v0.28.1.3.tar -C $HOME/tanzu
-          
-   #tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
-	 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
-
-   export TANZU_CLI_NO_INIT=true
-   
-   cd $HOME/tanzu
-	 sudo install cli/core/v0.28.1/tanzu-core-linux_amd64 /usr/local/bin/tanzu     
-	 
-	 #sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 		
-	 #sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu
-	 
-   tanzu version
-   
-   tanzu plugin install --local cli all
-   tanzu plugin list
-
-}
+#function install_tanzu_cli_pivnet()
+#{
+#
+#   echo "######## Installing Tanzu-CLI From Pivnet ###########"
+#
+#	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'	 
+#	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1404618
+#	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
+#   #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
+#   
+#   rm -rfv $HOME/tanzu     
+#   mkdir $HOME/tanzu
+#   
+#   tar -xvf tanzu-framework-linux-amd64-v0.28.1.3.tar -C $HOME/tanzu
+#          
+#   #tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
+#	 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
+#
+#   export TANZU_CLI_NO_INIT=true
+#   
+#   cd $HOME/tanzu
+#	 sudo install cli/core/v0.28.1/tanzu-core-linux_amd64 /usr/local/bin/tanzu     
+#	 
+#	 #sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 		
+#	 #sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu
+#	 
+#   tanzu version
+#   
+#   tanzu plugin install --local cli all
+#   tanzu plugin list
+#
+#}
 
 function install_tanzu_cli_pkg()
 {
