@@ -667,6 +667,8 @@ function install_tap_prereqs()
 	#
 	# More games with BAD install scripts..
 	#
+
+	echo "######## Attempting CE Install.sh ###########"	
 	printf 'yy' | ./install.sh
 	
 	echo "######## Installing Kapp ###########"
