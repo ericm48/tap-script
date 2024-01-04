@@ -672,7 +672,9 @@ function install_tap_prereqs()
 	#
 
 	echo "######## Attempting CE Install.sh ###########"	
-	printf 'yy' | ./install.sh
+	#printf 'yy' | ./install.sh
+	
+	yes | ./install.sh
 	
 	echo "######## Installing Kapp ###########"
 	sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
