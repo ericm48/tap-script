@@ -283,10 +283,19 @@ function install_aks()
 	
 	echo "AKS Cluster Created!"
 	
-	echo " "
-	echo "Install az aks kubectl......"
+	kubectl version &> /dev/null
+
+	returnVal=$?
 	
-	sudo az aks install-cli
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
+	  echo " "
+		echo "Install az aks kubectl......"
+	
+		sudo az aks install-cli
+	fi
+	
+	echo "kubectl-CLI Version: "
+	kubectl version	
 	
 	echo "Set the context..."
 	az account set --subscription $theAzureSubscription
