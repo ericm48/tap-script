@@ -22,9 +22,6 @@ tanzu package available list --namespace tap-install
 echo "Tanzu Application Platform Package Repository Status: "
 tanzu package repository list -A
 
-# HERE DUDE! Stop here fer now..
-exit 1011
-
 
 echo "TAP ${TAP_VERSION} Install Begins..."
 tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file ./tap-values-${TAP_VERSION}-acr.yaml -n tap-install
