@@ -2,27 +2,31 @@
 
 # Tap install for version: 1.7.1
 
-echo "############# Create Target Namespace ####################"
+echo "Create Target Namespace..."
 kubectl create namespace dev1
 
 tanzu secret registry list -n tap-install
 
 
-echo "############# DELETING PREVIOUS Tanzu Application Platform package repository to the cluster ####################"
+echo "DELETING PREVIOUS Tanzu Application Platform package repository to the cluster..."
 tanzu package repository delete tanzu-tap-repository -n tap-install --yes
 
-echo "############# Adding Tanzu Application Platform package repository to the cluster ####################"
+echo "Adding Tanzu Application Platform package repository to the cluster..."
 tanzu package repository add tanzu-tap-repository --url $TS_TAP_REGISTRY_HOSTNAME/$TS_TAP_REGISTRY_REPO_NAME/tap-packages --namespace tap-install
 
 tanzu package repository get tanzu-tap-repository --namespace tap-install
 
-echo "############# List the available packages ####################"
+echo "Available Packages:"
 tanzu package available list --namespace tap-install
 
-echo "############# Tanzu Application Platform Package Repository Status ####################"
+echo "Tanzu Application Platform Package Repository Status: "
 tanzu package repository list -A
 
-echo "############### TAP ${TAP_VERSION} Install   ##################"
+# HERE DUDE! Stop here fer now..
+exit 1011
+
+
+echo "TAP ${TAP_VERSION} Install Begins..."
 tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file ./tap-values-${TAP_VERSION}-acr.yaml -n tap-install
 
 # HERE DUDE! for now...til I figure out the rest below...
