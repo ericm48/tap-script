@@ -43,6 +43,9 @@ theResponse=""
 theTAPVersion=""
 theFileIDClusterEssentials=""
 
+useForce=""
+returnVal=0
+
 function usage() {
 
   echo ""
@@ -51,13 +54,15 @@ function usage() {
   echo ""
   echo "Options: "
   echo ""
-  echo "  -A number of parameters can be exported to evars to reduce cycle-time."
+  echo "   A number of parameters can be exported to evars to reduce cycle-time."
   echo "   These are prefaced with TS_ below."  
   echo ""
   echo "  *** Also MAKE SURE you are docker login'd to BOTH, BEFORE RUNNING: ***"
   echo "     -registry.tanzu.vmware.com"
   echo "     -your-target-registry"
   echo ""
+  echo "  -F -UseForce Flag.  This will FORCEFULLY re-install ALL CLIs."  
+	echo ""    
   echo ""  
   
   echo "TS_ Variables:"
@@ -91,8 +96,9 @@ function usage() {
 function load_params() {
   
   if [[ -z $TS_TARGET_CLOUD ]]; then
-		echo "######################## Type: AKS for Azure, EKS for Amazon, GKE for Google ########################"
-		echo "############################ If you choose EKS, Keep docker.io credentials handy ######################"
+		echo " "		
+		echo "Type: AKS for Azure, EKS for Amazon, GKE for Google"
+		echo "If you choose EKS, Keep docker.io credentials handy..."
 		read -p "Enter The Target Cloud: " theCloud  
 	else
 		theCloud="$TS_TARGET_CLOUD"
@@ -249,50 +255,55 @@ function display_params() {
 	
 function install_aks()
 {	
-	 
-	echo "#################  Installing AZ cli #####################"
-	curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-	echo "##########################################################"
-	echo "################# AZ CLI version #########################"
-	az --version   
+  
+	az --version &> /dev/null
+
+	returnVal=$?
 	
-	echo "#####################################################################################################"
-	echo "#############  Authenticate to AZ cli by following the screen Instructions below ####################"
-	echo "#####################################################################################################"
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
+	  echo " "
+		echo "Installing az-CLI..."
+		curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+	fi
+
+	echo "az-Cli Version: "
+	az --version   		
+	
+	echo " "
+	echo "Authenticate to AZ cli by following the screen Instructions below..."
 	az login
 	
-	echo "#########################################"
-	echo "Resource group created with name eric-tap-east-rg in region and the subscription mentioned above"
-	echo "#########################################"
+	echo " "
+	echo "Resource group created with name eric-tap-east-rg in region and the subscription mentioned above..."
 	az group create --name eric-tap-east-rg --location $theAzureRegion --subscription $theAzureSubscription
-	
-	echo "#########################################"
-	echo "Creating AKS cluster with 3 node and sku as Standard_B8ms"
-	echo "#########################################"
+
+	echo " "
+	echo "Creating AKS cluster with 3 node and sku as Standard_B8ms..."
 	az aks create --resource-group eric-tap-east-rg --name $theClusterName --subscription $theAzureSubscription --node-count 3 --enable-addons monitoring --generate-ssh-keys --node-vm-size Standard_B8ms -z 1 --enable-cluster-autoscaler --min-count 3 --max-count 3
 	
-	echo "############### Created AKS Cluster ###############"
-	echo "############### Install kubectl ##############"
+	echo "AKS Cluster Created!"
+	
+	echo " "
+	echo "Install az aks kubectl......"
 	
 	sudo az aks install-cli
 	
-	echo "############### Set the context ###############"
+	echo "Set the context..."
 	az account set --subscription $theAzureSubscription
 	az aks get-credentials --resource-group eric-tap-east-rg --name $theClusterName
 	
-	echo "############## Verify the nodes #################"
-	echo "#####################################################################################################"
+	echo "Verify K8s Nodes..."
 	kubectl get nodes
-	
-	echo "#####################################################################################################"
-	echo "###### Create RG for Repo  ######"
+
+	echo " "
+	echo "Create RG for Repo..."
 	az group create --name eric-tap-workshop-imagerepo-rg --location $theAzureRegion
-	
-	echo "####### Create container registry  ############"
-	echo "#####################################################################################################"
+
+	echo "Create Container Registry..."
+
 	az acr create --resource-group eric-tap-workshop-imagerepo-rg --name ericmtaptestdemoacr --sku Standard
 	
-	echo "####### Fetching acr Admin credentials ##########"
+	echo "Fetching ACR Admin Credentials..."
 	az acr update -n ericmtaptestdemoacr --admin-enabled true
 	acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
 	acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
@@ -302,9 +313,8 @@ function install_aks()
 		    acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
 		    if grep -q "/"  <<< "$acrpassword1";
 		      then
-	      	   echo "##########################################################################"
 	 					 echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
-	        	 echo "###########################################################################"
+
 				else
 	   			acrpassword=$acrpassword1
 	      fi
@@ -312,7 +322,8 @@ function install_aks()
 	  echo "PassWord Updated in tap values file"
 	fi
 	
-	echo "######### Preparing the tap-values file ##########"
+	echo " "	
+	echo "Preparing the tap-values file..."
 	sed -i -r "s/tanzunetusername/$tanzunetusername/g" "$HOME/tap-script/tap-values.yaml"
 	sed -i -r "s/tanzunetpassword/$tanzunetpassword/g" "$HOME/tap-script/tap-values.yaml"
 	sed -i -r "s/registryname/$acrloginserver/g" "$HOME/tap-script/tap-values.yaml"
@@ -320,14 +331,13 @@ function install_aks()
 	sed -i -r "s/repopassword/$acrpassword/g" "$HOME/tap-script/tap-values.yaml"
 	sed -i -r "s/domainname/$domainname/g" "$HOME/tap-script/tap-values.yaml"
 	sed -i -r "s/githubtoken/$githubtoken/g" "$HOME/tap-script/tap-values.yaml"
-	
-	echo "########### Creating namespace tap-install #############"      
+
+	echo " "	
+	echo "Creating namespace tap-install..."
 	  
 	kubectl create ns tap-install
 	
-	echo "####################################################################"
-	echo "########### Creating Secrets in tap-install namespace  #############"
-	echo "####################################################################"
+	echo "Creating Secrets in tap-install namespace..."
    
 	kubectl delete secret registry-credentials -n tap-install
 	kubectl create secret docker-registry registry-credentials --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
@@ -627,20 +637,27 @@ EOF
 
 function install_tap_prereqs()
 {
-	echo "############# Installing Pivnet CLI ###########"
-	wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
-	chmod +x pivnet-linux-amd64-3.0.1
-	sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
+
+	pivnet --version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
+
+		echo " "	
+		echo "Installing pivnet-CLI..."
+		
+		wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
+		chmod +x pivnet-linux-amd64-3.0.1
+		sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
+
+	fi
+	
+  echo "pivnet-CLI Version: "
+	pivnet --version
 	   
-	echo "########## Downloading Tanzu Cluster Essentials #############"
-	pivnet login --api-token=${thePivNetToken}
-	
+	echo "Downloading Tanzu Cluster Essentials..."
+	pivnet login --api-token=${thePivNetToken}	
 	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id="$theFileIDClusterEssentials"
-	
-	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=1.6.1 --product-file-id=1358494   
-	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.5.3' --product-file-id='1553881'
-	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.4.0' --product-file-id=1407185
-	#pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.3.0' --product-file-id=1330470
 	
 	rm -rfv $HOME/tanzu-cluster-essentials
 	mkdir $HOME/tanzu-cluster-essentials
@@ -662,7 +679,6 @@ function install_tap_prereqs()
 	export INSTALL_REGISTRY_USERNAME=${theTanzuNetUserName}
 	export INSTALL_REGISTRY_PASSWORD=${theTanzuNetPassWord}
    
-	echo "######## Installing Cluster-Essentials ###########"
 	cd $HOME/tanzu-cluster-essentials
 	
 	kubectl create ns kapp-controller
@@ -671,69 +687,77 @@ function install_tap_prereqs()
 	# More games with BAD install scripts..
 	#
 
-	echo "######## Attempting CE Install.sh ###########"	
-	#printf 'yy' | ./install.sh
+	echo " "	   
+	echo "Attempting ClusterEssentials LOCAL Install.sh..."	
 	
 	yes | ./install.sh
 	
-	echo "######## Installing Kapp ###########"
-	sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
-	sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
-	echo "#################################"
-	kapp version
 
+	pivnet --version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
+
+		echo " "	
+		echo "Installing pivnet-CLI..."
+		
+		wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
+		chmod +x pivnet-linux-amd64-3.0.1
+		sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
+
+	fi
+
+	echo "pivnet-CLI Version: "
+	pivnet --version	
+	
+	kapp --version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
+		
+		echo " "		
+		echo "Installing kapp-CLI..."
+		sudo cp $HOME/tanzu-cluster-essentials/kapp /usr/local/bin/kapp
+		sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
+
+	fi
+	
+	echo "kapp-CLI Version: "
+	kapp --version
+
+	echo "imgpkg-CLI Version: "
+	imgpkg --version
+	
    
 }	# End of install_tap_prereqs
 
 
-#function install_tanzu_cli_pivnet()
-#{
-#
-#   echo "######## Installing Tanzu-CLI From Pivnet ###########"
-#
-#	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.3' --product-file-id='1478717'	 
-#	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1404618
-#	 #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.4.0' --product-file-id=1404618
-#   #pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1310085
-#   
-#   rm -rfv $HOME/tanzu     
-#   mkdir $HOME/tanzu
-#   
-#   tar -xvf tanzu-framework-linux-amd64-v0.28.1.3.tar -C $HOME/tanzu
-#          
-#   #tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
-#	 #tar -xvf tanzu-framework-linux-amd64-v0.25.4.tar -C $HOME/tanzu
-#
-#   export TANZU_CLI_NO_INIT=true
-#   
-#   cd $HOME/tanzu
-#	 sudo install cli/core/v0.28.1/tanzu-core-linux_amd64 /usr/local/bin/tanzu     
-#	 
-#	 #sudo install cli/core/v0.25.4/tanzu-core-linux_amd64 /usr/local/bin/tanzu	 		
-#	 #sudo install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu
-#	 
-#   tanzu version
-#   
-#   tanzu plugin install --local cli all
-#   tanzu plugin list
-#
-#}
-
 function install_tanzu_cli_pkg()
 {
-  echo "######## Installing Tanzu-CLI From Package-Mgr ###########"
-  
-	sudo mkdir -p /etc/apt/keyrings/
-	sudo apt-get update
-	sudo apt-get install -y ca-certificates curl gpg
-	
-	curl -fsSL https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub | sudo gpg --yes --dearmor -o /etc/apt/keyrings/tanzu-archive-keyring.gpg
-	echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/tanzu-archive-keyring.gpg] https://storage.googleapis.com/tanzu-cli-os-packages/apt tanzu-cli-jessie main" | sudo tee /etc/apt/sources.list.d/tanzu.list
-	
-	sudo apt-get update
-	sudo apt-get install -y tanzu-cli
 
-	cp /usr/bin/tanzu /usr/local/bin/tanzu
+	tanzu version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
+
+		echo " "
+	  echo "Installing tanzu-CLI From Package-Mgr..."
+	  
+		sudo mkdir -p /etc/apt/keyrings/
+		sudo apt-get update
+		sudo apt-get install -y ca-certificates curl gpg
+		
+		curl -fsSL https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub | sudo gpg --yes --dearmor -o /etc/apt/keyrings/tanzu-archive-keyring.gpg
+		echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/tanzu-archive-keyring.gpg] https://storage.googleapis.com/tanzu-cli-os-packages/apt tanzu-cli-jessie main" | sudo tee /etc/apt/sources.list.d/tanzu.list
+		
+		sudo apt-get update
+		sudo apt-get install -y tanzu-cli
+			
+		cp /usr/bin/tanzu /usr/local/bin/tanzu
+		
+	fi
+	
+	echo "tanzu-CLI Version:"
   tanzu version
 	
 }
@@ -741,13 +765,15 @@ function install_tanzu_cli_pkg()
 function install_tanzu_pluginz()
 {
 
-  echo "######## Installing Tanzu-Plugins ###########"
+	echo " "
+  echo "Installing Tanzu-Plugins..."
   
   tanzu plugin group search --show-details
   tanzu plugin group search --name vmware-tanzu/default --show-details
   tanzu plugin install --group vmware-tap/default:v"$theTAPVersion"
   tanzu plugin group get vmware-tap/default:v"$theTAPVersion"
   
+  echo "Tanzu-Plugins: "
   tanzu plugin list
 
 }
@@ -755,51 +781,93 @@ function install_tanzu_pluginz()
 function install_otherz()
 {
 
-   echo "######### Installing Docker -LATEST ############"
-   sudo apt-get update
-   sudo apt-get install -y ca-certificates curl  gnupg  lsb-release
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-   
-   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-   sudo apt-get update
-   sudo apt-get install -y docker-ce docker-ce-cli containerd.io -y
-   sudo usermod -aG docker $USER
+	docker --version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
 
-   echo "######### Installing JQ -LATEST ############"
-   sudo apt-get install -y jq
-   jq --version
-   
-   echo "######### Installing KPack v0.12.0 ############"   
-   
-   wget "https://github.com/buildpacks-community/kpack-cli/releases/download/v0.12.0/kp-linux-amd64-0.12.0"
-   cp -f ./kp-linux-amd64-0.12.0 /usr/local/bin/kp
-   chmod +x /usr/local/bin/kp  
-   kp version   
-   
-   echo "######### Installing SOPs v3.7.3 ############"   
-	 curl -LO https://github.com/getsops/sops/releases/download/v3.7.3/sops-v3.7.3.linux.amd64
-	 mv sops-v3.7.3.linux.amd64 /usr/local/bin/sops
-	 chmod +x /usr/local/bin/sops   
-   sops --version
+		echo " "
+		echo "Installing docker-CLI... "
+		sudo apt-get update
+		sudo apt-get install -y ca-certificates curl  gnupg  lsb-release
+		curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+		
+		echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+		sudo apt-get update
+		sudo apt-get install -y docker-ce docker-ce-cli containerd.io -y
+		sudo usermod -aG docker $USER
+		
+ 	fi		
+ 	
+	echo "docker-CLI version: "
+	docker --version
+		
+	jq --version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then		
+		
+		echo "Installing jq-CLI..."
+		sudo apt-get install -y jq
+		
+	fi
+			
+	echo "jq-CLI version: "			
+	jq --version
+
+
+	kp version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then		
+
+		echo " "
+		echo "Installing KPack kp-CLI v0.12.0..."
+		
+		wget "https://github.com/buildpacks-community/kpack-cli/releases/download/v0.12.0/kp-linux-amd64-0.12.0"
+		cp -f ./kp-linux-amd64-0.12.0 /usr/local/bin/kp
+		chmod +x /usr/local/bin/kp
+		
+	fi
+	
+	echo "kp-CLI Version:"
+	kp version   
+
+	sops --version &> /dev/null	
+	returnVal=$?
+	
+	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then		
+
+		echo " "
+		echo "Installing sops-CLI v3.7.3..."   
+		curl -LO https://github.com/getsops/sops/releases/download/v3.7.3/sops-v3.7.3.linux.amd64
+		mv sops-v3.7.3.linux.amd64 /usr/local/bin/sops
+		chmod +x /usr/local/bin/sops		
+	fi
+	
+	echo "sops-CLI Version: "
+	sops --version
+	
 }
 
 
 function create_tap_registry_secret()
 {   
 
-	echo "######### DELETING PREVIOUS TAP Registry Secret ############"  
+	echo "DELETING PREVIOUS TAP Registry Secret..."  
 	  
 	yes | tanzu secret registry delete tap-registry --namespace tap-install
 	
-	echo ""
-	echo "######### Creating The TAP Registry Secret ############"
-	echo " For Repo: $theTAPRegistryHostName"
+	echo " "
+	echo "Creating The TAP Registry Secret..."
+	echo "   For Repo: $theTAPRegistryHostName"
 	
 	tanzu secret registry add tap-registry \
 	  --username ${theTAPRegistryUserName} --password ${theTAPRegistryPassWord} \
 		--server ${theTAPRegistryHostName} \
 		--export-to-all-namespaces --yes --namespace tap-install
-	
+
+	echo "Current Tanzu Secrets: "	
 	tanzu secret registry list -n tap-install
 		
 }
@@ -810,9 +878,10 @@ function copy_tap_packages()
 	# better be docker login'd into source registry! 
 	# better be docker login'd into target registry!
 
-  echo "######### *** WARNING: You better be docker log'd into 2X !!! ############"  
+	echo " "
+  echo "***WARNING: You better be docker log'd into 2x !!!"  
 	
-  echo "######### Adding TAP Registry As TAP Repository ############"  
+  echo "Adding TAP Registry As TAP Repository..."  
 	 
 	tanzu package repository add tanzu-tap-repository \
 	  --url ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages:${theTAPVersion} \
@@ -824,7 +893,8 @@ function copy_tap_packages()
   #	./tap/tap-1.5.4/tap-packages
   # ./tap/tap-1.5.4/tap-workloads
 
-	echo "######### Copying TAP Packages To TAP Registry ############"  
+	echo "Copying TAP Packages To TAP Registry..."  
+	
   imgpkg copy --include-non-distributable-layers -b \
   	${theTanzuRegistryHostName}/tanzu-application-platform/tap-packages:${theTAPVersion} \
   	--to-repo ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages
@@ -836,6 +906,12 @@ function copy_tap_packages()
 #
 # Main
 #
+
+	if [  "$1" == "-F" ] || [ "$1" == "-f" ] 
+		then
+	    useForce="T"
+	fi		
+
 	if [  "$1" == "-H" ] || [ "$1" == "-h" ] || [ "$1" == "--H" ] || [ "$1" == "--h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]
 		then
 			usage
