@@ -903,13 +903,17 @@ function setup_initial_secretz()
 	#kubectl delete secret image-secret -n tap-install   
   #kubectl create secret docker-registry image-secret --docker-server=$theTAPRegistryLoginServer --docker-username=$theTAPRegistryUserName --docker-password=$theTAPRegistryPassWord -n tap-install
 
-	echo "Creating Tanzu Secret: lsp-pull-credentials..."	
-	tanzu secret registry delete lsp-pull-credentials --namespace tap-install
-	tanzu secret registry add lsp-pull-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
-		
-	echo "Creating Tanzu Secret: lsp-push-credentials..."		
-	tanzu secret registry delete lsp-push-credentials --namespace tap-install
-	tanzu secret registry add lsp-push-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
+	if [[  "$theCloud" == "AKS" ]]; then
+
+		echo "Creating Tanzu Secret: lsp-pull-credentials..."	
+		tanzu secret registry delete lsp-pull-credentials --namespace tap-install
+		tanzu secret registry add lsp-pull-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
+			
+		echo "Creating Tanzu Secret: lsp-push-credentials..."		
+		tanzu secret registry delete lsp-push-credentials --namespace tap-install
+		tanzu secret registry add lsp-push-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
+
+  fi
   
 }
 
@@ -936,6 +940,8 @@ function copy_tap_packages()
   # ./tap/tap-1.5.4/tap-workloads
 
 	echo "Copying TAP Packages To TAP Registry..."  
+	
+# HERE DUDE:  Finish this...add one for cluster essentials...	
 	
   imgpkg copy --include-non-distributable-layers -b \
   	${theTanzuRegistryHostName}/tanzu-application-platform/tap-packages:${theTAPVersion} \
