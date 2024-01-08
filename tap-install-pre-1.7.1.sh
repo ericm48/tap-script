@@ -28,6 +28,7 @@ theTanzuRepoName=""
 theTanzuNetUserName=""
 theTanzuNetPassWord=""
 
+theTAPRegistryLoginServer=""
 theTAPRegistryHostName=""
 theTAPRegistryRepoName=""
 theTAPRegistryUserName=""
@@ -145,6 +146,12 @@ function load_params() {
 	else
 		theClusterName="$TS_CLUSTER_NAME"
   fi
+
+  if [[ -z $TS_TAP_REGISTRY_LOGIN_SERVER ]]; then
+		read -p "Enter the TAP Registry LoginServer: " theTAPRegistryLoginServer
+	else
+		theTAPRegistryLoginServer="$TS_TAP_REGISTRY_LOGIN_SERVER"
+  fi  
 
   if [[ -z $TS_TAP_REGISTRY_HOSTNAME ]]; then
 		read -p "Enter the TAP Registry HostName: " theTAPRegistryHostName
@@ -311,48 +318,43 @@ function install_aks()
 	echo "Create Container Registry..."
 
 	az acr create --resource-group eric-tap-workshop-imagerepo-rg --name ericmtaptestdemoacr --sku Standard
-	
-	echo "Fetching ACR Admin Credentials..."
-	az acr update -n ericmtaptestdemoacr --admin-enabled true
-	acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
-	acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
-	acrpassword=$(az acr credential show --name ericmtaptestdemoacr --query passwords[0].value -o tsv)
-	if grep -q "/"  <<< "$acrpassword";
-	   then
-		    acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
-		    if grep -q "/"  <<< "$acrpassword1";
-		      then
-	 					 echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
 
-				else
-	   			acrpassword=$acrpassword1
-	      fi
-	else
-	  echo "PassWord Updated in tap values file"
-	fi
-	
-	echo " "	
-	echo "Preparing the tap-values file..."
-	sed -i -r "s/tanzunetusername/$tanzunetusername/g" "$HOME/tap-script/tap-values.yaml"
-	sed -i -r "s/tanzunetpassword/$tanzunetpassword/g" "$HOME/tap-script/tap-values.yaml"
-	sed -i -r "s/registryname/$acrloginserver/g" "$HOME/tap-script/tap-values.yaml"
-	sed -i -r "s/repousername/$acrusername/g" "$HOME/tap-script/tap-values.yaml"
-	sed -i -r "s/repopassword/$acrpassword/g" "$HOME/tap-script/tap-values.yaml"
-	sed -i -r "s/domainname/$domainname/g" "$HOME/tap-script/tap-values.yaml"
-	sed -i -r "s/githubtoken/$githubtoken/g" "$HOME/tap-script/tap-values.yaml"
 
+	# 08-Jan-2024: Not sure if we wanna leave this in here..disabling 4 now..
+	
+#	echo "Fetching ACR Admin Credentials..."
+#	az acr update -n ericmtaptestdemoacr --admin-enabled true
+#	acrusername=$(az acr credential show --name ericmtaptestdemoacr --query "username" -o tsv)
+#	acrloginserver=$(az acr show --name ericmtaptestdemoacr --query loginServer -o tsv)
+#	acrpassword=$(az acr credential show --name ericmtaptestdemoacr --query passwords[0].value -o tsv)
+#	if grep -q "/"  <<< "$acrpassword";
+#	   then
+#		    acrpassword1=$(az acr credential show --name ericmtaptestdemoacr --query passwords[1].value -o tsv)
+#		    if grep -q "/"  <<< "$acrpassword1";
+#		      then
+#	 					 echo "Update the password manually in tap-values file(repopassword): password is $acrpassword1 "
+#
+#				else
+#	   			acrpassword=$acrpassword1
+#	      fi
+#	else
+#	  echo "PassWord Updated in tap values file"
+#	fi
+#	
+#	echo " "	
+#	echo "Preparing the tap-values file..."
+#	sed -i -r "s/tanzunetusername/$tanzunetusername/g" "$HOME/tap-script/tap-values.yaml"
+#	sed -i -r "s/tanzunetpassword/$tanzunetpassword/g" "$HOME/tap-script/tap-values.yaml"
+#	sed -i -r "s/registryname/$acrloginserver/g" "$HOME/tap-script/tap-values.yaml"
+#	sed -i -r "s/repousername/$acrusername/g" "$HOME/tap-script/tap-values.yaml"
+#	sed -i -r "s/repopassword/$acrpassword/g" "$HOME/tap-script/tap-values.yaml"
+#	sed -i -r "s/domainname/$domainname/g" "$HOME/tap-script/tap-values.yaml"
+#	sed -i -r "s/githubtoken/$githubtoken/g" "$HOME/tap-script/tap-values.yaml"
+#
 	echo " "	
 	echo "Creating namespace tap-install..."
 	  
 	kubectl create ns tap-install
-	
-	echo "Creating Secrets in tap-install namespace..."
-   
-	kubectl delete secret registry-credentials -n tap-install
-	kubectl create secret docker-registry registry-credentials --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
-   
-	kubectl delete secret image-secret -n tap-install   
-  kubectl create secret docker-registry image-secret --docker-server=$acrloginserver --docker-username=$acrusername --docker-password=$acrpassword -n tap-install
 
 }	 # End of install_aks
 
@@ -881,6 +883,37 @@ function create_tap_registry_secret()
 		
 }
 
+function setup_initial_secretz()
+{
+	
+	echo " "
+	echo "Creating Secrets in tap-install namespace..."
+
+	echo "Creating Tanzu Secret: registry-credentials..."	
+	tanzu secret registry delete registry-credentials --namespace tap-install
+	tanzu secret registry add registry-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install
+	
+	#kubectl delete secret registry-credentials -n tap-install	
+	#kubectl create secret docker-registry registry-credentials --docker-server=$theTAPRegistryLoginServer --docker-username=$theTAPRegistryUserName --docker-password=$theTAPRegistryPassWord -n tap-install
+ 	
+	echo "Creating Tanzu Secret: image-secret..."	
+	tanzu secret registry delete image-secret --namespace tap-install
+ 	tanzu secret registry add image-secret --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install
+   
+	#kubectl delete secret image-secret -n tap-install   
+  #kubectl create secret docker-registry image-secret --docker-server=$theTAPRegistryLoginServer --docker-username=$theTAPRegistryUserName --docker-password=$theTAPRegistryPassWord -n tap-install
+
+	echo "Creating Tanzu Secret: lsp-pull-credentials..."	
+	tanzu secret registry delete lsp-pull-credentials --namespace tap-install
+	tanzu secret registry add lsp-pull-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
+		
+	echo "Creating Tanzu Secret: lsp-push-credentials..."		
+	tanzu secret registry delete lsp-push-credentials --namespace tap-install
+	tanzu secret registry add lsp-push-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
+  
+}
+
+
 function copy_tap_packages()
 {
 
@@ -944,6 +977,8 @@ function copy_tap_packages()
 	if [[ "$theCloud" == "GKE" ]]; then
 		install_gke			
 	fi
+
+	setup_initial_secretz
 
 	install_otherz
 		
