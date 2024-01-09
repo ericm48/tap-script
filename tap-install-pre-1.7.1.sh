@@ -666,7 +666,7 @@ function install_tap_prereqs()
   echo "pivnet-CLI Version: "
 	pivnet --version
 	   
-	echo "Downloading Tanzu Cluster Essentials..."
+	echo "Downloading Tanzu Cluster Essentials CLI..."
 	pivnet login --api-token=${thePivNetToken}	
 	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id="$theFileIDClusterEssentials"
 	
@@ -681,8 +681,7 @@ function install_tap_prereqs()
 	#
 
 	# ToDo: Relo ClusterEssentials to my target registry..then run it.
-	
-  #export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:5cf31921f79c16468cccc2c465fba928509fcdd0aa7e8b738b8dd2323058c58d' #v1.7.1 BAD?
+
 	
 	export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:ca8584ff2ad4a4cf7a376b72e84fd9ad84ac6f38305767cdfb12309581b521f5'  #v1.7.1
 	
@@ -702,24 +701,6 @@ function install_tap_prereqs()
 	echo "Attempting ClusterEssentials LOCAL Install.sh..."	
 	
 	yes | ./install.sh
-	
-
-	pivnet --version &> /dev/null	
-	returnVal=$?
-	
-	if [[ $returnVal -ne 0 || "$useForce" == "T" ]]; then
-
-		echo " "	
-		echo "Installing pivnet-CLI..."
-		
-		wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
-		chmod +x pivnet-linux-amd64-3.0.1
-		sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
-
-	fi
-
-	echo "pivnet-CLI Version: "
-	pivnet --version	
 	
 	kapp --version &> /dev/null	
 	returnVal=$?
