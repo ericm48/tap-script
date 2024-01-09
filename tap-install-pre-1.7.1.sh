@@ -42,7 +42,8 @@ theAzureRegion=""
 theResponse=""
 
 theTAPVersion=""
-theFileIDClusterEssentials=""
+theClusterEssentialsFileID=""
+theClusterEssentialsInstallBundle=""
 
 useForce=""
 returnVal=0
@@ -183,11 +184,20 @@ function load_params() {
 		theTAPVersion="$TS_TAP_VERSION"
   fi
 
-  if [[ -z $TS_FILEID_CLUSTER_ESSENTIALS ]]; then
-		read -p "Enter the FILEID for the ClusterEssentials Version: " theFileIDClusterEssentials
+  if [[ -z $TS_CLUSTER_ESSENTIALS_FILEID ]]; then
+		read -p "Enter the FILEID for the ClusterEssentials Version: " theClusterEssentialsFileID
 	else
-		theFileIDClusterEssentials="$TS_FILEID_CLUSTER_ESSENTIALS"
+		theClusterEssentialsFileID="$TS_CLUSTER_ESSENTIALS_FILEID"
   fi
+
+  if [[ -z $TS_CLUSTER_ESSENTIALS_INSTALL_BUNDLE ]]; then
+		read -p "Enter the FILEID for the ClusterEssentials Version: " theClusterEssentialsInstallBundle
+	else
+		theClusterEssentialsInstallBundle="$TS_CLUSTER_ESSENTIALS_INSTALL_BUNDLE"
+  fi
+
+	
+	# AKS Things:
 
 	if [[  "$theCloud" == "AKS" ]]; then
 
@@ -213,24 +223,28 @@ function display_params() {
 	echo ""
 	echo "Parameters SET:"
 	echo ""	
-	echo "     TargetCloud: $theCloud"
-	echo "     PivNetToken: $thePivNetToken"	
-	echo "     GithubToken: $theGithubToken"		
-	echo ""
-
-	echo "     TanzuNetRegistryHostName: $theTanzuRegistryHostName"	
-	echo "             TanzuNetUserName: $theTanzuNetUserName"	
-	echo "             TanzuNetPassWord: ***"	# theTanzuNetPassWord
-	echo ""
-
-  echo "  TAPRegistryLoginServer: $theTAPRegistryLoginServer"
-	echo "     TAPRegistryHostName: $theTAPRegistryHostName"	
-	echo "     TAPRegistryRepoName: $theTAPRegistryRepoName"
-	echo "     TAPRegistryUserName: $theTAPRegistryUserName"	
-	echo "     TAPRegistryPassWord: ***"	# theTanzuNetPassWord
-	echo "              TAPVersion: $theTAPVersion"	
-	echo ""	
+	echo "                   TargetCloud: $theCloud"
+	echo "                   PivNetToken: $thePivNetToken"	
+	echo "                   GithubToken: $theGithubToken"
 	
+	echo ""
+	echo "      TanzuNetRegistryHostName: $theTanzuRegistryHostName"	
+	echo "              TanzuNetUserName: $theTanzuNetUserName"	
+	echo "              TanzuNetPassWord: ***"	# theTanzuNetPassWord
+
+	echo ""	
+	echo "       ClusterEssentialsFileID: $theClusterEssentialsFileID"
+	echo "ClusterEssentialsInstallBundle: $theClusterEssentialsInstallBundle"
+	
+	echo ""
+  echo "        TAPRegistryLoginServer: $theTAPRegistryLoginServer"
+	echo "           TAPRegistryHostName: $theTAPRegistryHostName"	
+	echo "           TAPRegistryRepoName: $theTAPRegistryRepoName"
+	echo "           TAPRegistryUserName: $theTAPRegistryUserName"	
+	echo "           TAPRegistryPassWord: ***"	# theTanzuNetPassWord
+	echo "                    TAPVersion: $theTAPVersion"	
+
+	echo ""
 	echo "     DomainName: $theDomainName"
 	echo "     ClusterName: $theClusterName"
 	echo ""
@@ -666,26 +680,34 @@ function install_tap_prereqs()
 	
   echo "pivnet-CLI Version: "
 	pivnet --version
+
+
+	if [[ ! -f $HOME/tanzu-cluster-essentials/install.sh || "$useForce" == "T" ]]; then
 	   
-	echo "Downloading Tanzu Cluster Essentials CLI..."
-	pivnet login --api-token=${thePivNetToken}	
-	pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id="$theFileIDClusterEssentials"
-	
-	rm -rfv $HOME/tanzu-cluster-essentials
-	mkdir $HOME/tanzu-cluster-essentials
-	
-	tar -xvf tanzu-cluster-essentials-linux-amd64-"$theTAPVersion".tgz -C $HOME/tanzu-cluster-essentials
+		echo "Downloading Tanzu Cluster Essentials CLI..."
+		pivnet login --api-token=${thePivNetToken}	
+		pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="$theTAPVersion" --product-file-id="$theClusterEssentialsFileID"
+		
+		rm -rfv $HOME/tanzu-cluster-essentials
+		mkdir $HOME/tanzu-cluster-essentials
+		
+		tar -xvf tanzu-cluster-essentials-linux-amd64-"$theTAPVersion".tgz -C $HOME/tanzu-cluster-essentials
    
-	#
-	# Set these eVARS!! The cluster-essential's install.sh below, requires these 
-	# INSTALL_ eVars be set!  Even tho we already downloaded it...doh!
-	#
+		#
+		# Set these eVARS!! The cluster-essential's install.sh below, requires these 
+		# INSTALL_ eVars be set!  Even tho we already downloaded it...doh!
+		#
 
-	# ToDo: Relo ClusterEssentials to my target registry..then run it.
+		# ToDo: Relo ClusterEssentials to my target registry..then run it.
+
+	fi
 
 	
-	export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:ca8584ff2ad4a4cf7a376b72e84fd9ad84ac6f38305767cdfb12309581b521f5'  #v1.7.1
-	
+	#export INSTALL_BUNDLE='registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:ca8584ff2ad4a4cf7a376b72e84fd9ad84ac6f38305767cdfb12309581b521f5'  #v1.7.1
+
+  # HERE DUDE: Hackify what the ACR version of the INSTALL_BUNDLE evar would look like...
+
+	export INSTALL_BUNDLE="$theClusterEssentialsInstallBundle"	
 	export INSTALL_REGISTRY_HOSTNAME=${theTanzuRegistryHostName}
 	export INSTALL_REGISTRY_USERNAME=${theTanzuNetUserName}
 	export INSTALL_REGISTRY_PASSWORD=${theTanzuNetPassWord}
@@ -920,13 +942,20 @@ function copy_tap_packages()
   #	./tap/tap-1.5.4/tap-packages
   # ./tap/tap-1.5.4/tap-workloads
 
-	echo "Copying TAP Packages To TAP Registry..."  
-	
-# HERE DUDE:  Finish this...add one for cluster essentials...	
+	echo "Copying TAP Packages From Tanzu Registry To TAP Registry..."  
 	
   imgpkg copy --include-non-distributable-layers -b \
   	${theTanzuRegistryHostName}/tanzu-application-platform/tap-packages:${theTAPVersion} \
   	--to-repo ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/tap-packages
+
+	echo "Copying Cluster-Essentials-Bundle From Tanzu Registry To TAP Registry..."  
+	
+	imgpkg copy --include-non-distributable-layers -b \
+	  registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:ca8584ff2ad4a4cf7a376b72e84fd9ad84ac6f38305767cdfb12309581b521f5 \
+	  --to-repo ${theTAPRegistryHostName}/${theTAPRegistryRepoName}/cluster-essentials-bundle
+	  
+# HERE DUDE Add TS_ClusterEssentials evar handling..
+	  
 
 }
 
