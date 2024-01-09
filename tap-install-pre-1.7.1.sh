@@ -222,7 +222,8 @@ function display_params() {
 	echo "             TanzuNetUserName: $theTanzuNetUserName"	
 	echo "             TanzuNetPassWord: ***"	# theTanzuNetPassWord
 	echo ""
-	
+
+  echo "  TAPRegistryLoginServer: $theTAPRegistryLoginServer"
 	echo "     TAPRegistryHostName: $theTAPRegistryHostName"	
 	echo "     TAPRegistryRepoName: $theTAPRegistryRepoName"
 	echo "     TAPRegistryUserName: $theTAPRegistryUserName"	
