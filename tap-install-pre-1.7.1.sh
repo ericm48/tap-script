@@ -909,11 +909,11 @@ function setup_initial_secretz()
 	if [[  "$theCloud" == "AKS" ]]; then
 
 		echo "Creating Tanzu Secret: lsp-pull-credentials..."	
-		tanzu secret registry delete lsp-pull-credentials --namespace tap-install
+		yes | tanzu secret registry delete lsp-pull-credentials --namespace tap-install
 		tanzu secret registry add lsp-pull-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
 			
 		echo "Creating Tanzu Secret: lsp-push-credentials..."		
-		tanzu secret registry delete lsp-push-credentials --namespace tap-install
+		yes | tanzu secret registry delete lsp-push-credentials --namespace tap-install
 		tanzu secret registry add lsp-push-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install --yes
 
   fi
