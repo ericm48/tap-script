@@ -893,14 +893,14 @@ function setup_initial_secretz()
 	echo "Creating Secrets in tap-install namespace..."
 
 	echo "Creating Tanzu Secret: registry-credentials..."	
-	tanzu secret registry delete registry-credentials --namespace tap-install
+	yes | tanzu secret registry delete registry-credentials --namespace tap-install
 	tanzu secret registry add registry-credentials --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install
 	
 	#kubectl delete secret registry-credentials -n tap-install	
 	#kubectl create secret docker-registry registry-credentials --docker-server=$theTAPRegistryLoginServer --docker-username=$theTAPRegistryUserName --docker-password=$theTAPRegistryPassWord -n tap-install
  	
 	echo "Creating Tanzu Secret: image-secret..."	
-	tanzu secret registry delete image-secret --namespace tap-install
+	yes | tanzu secret registry delete image-secret --namespace tap-install
  	tanzu secret registry add image-secret --server $theTAPRegistryLoginServer --username $theTAPRegistryUserName --password $theTAPRegistryPassWord --namespace tap-install
    
 	#kubectl delete secret image-secret -n tap-install   
