@@ -209,7 +209,7 @@ grype:
 EOF
 
 echo "Installing Grype Scanner..."
-tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version ${TAP_VERSION}  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
+tanzu package install grype-scanner --package grype.scanning.apps.tanzu.vmware.com --version ${TAP_VERSION}  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
 
 echo "Creating Workload..."
 
