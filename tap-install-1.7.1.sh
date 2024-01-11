@@ -29,26 +29,27 @@ tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-fil
 # HERE DUDE! for now...til I figure out the rest below...
 exit 1010
 
+
 tanzu package installed list -A
 
-reconcilestat=$(tanzu package installed list -A -o json | jq ' .[] | select(.status == "Reconcile failed: Error (see .status.usefulErrorMessage for details)" or .status == "Reconciling")' | jq length | awk '{sum=sum+$0} END{print sum}')
+reconcilestat=$(tanzu package installed list -A -o json | jq ' .[] | select(.status == "Reconcile failed" or .status == "Reconciling")' | jq length | awk '{sum=sum+$0} END{print sum}')
 
 if [ $reconcilestat > '0' ];
     then
 	tanzu package installed list -A
-	sleep 20m
-	echo "################# Wait for 20 minutes #################"
+	echo "Waiting for 5 minutes..."
+	sleep 5m 	
 	tanzu package installed list -A
 	tanzu package installed get tap -n tap-install
 	reconcilestat1=$(tanzu package installed list -A -o json | jq ' .[] | select(.status == "Reconcile failed: Error (see .status.usefulErrorMessage for details)" or .status == "Reconciling")' | jq length | awk '{sum=sum+$0} END{print sum}')
 	if [ $reconcilestat1 > '0' ];
 	   then
-		echo "################### Something is wrong with package install, Check the package status manually ############################"
-		echo "################### Exiting #########################"
+		echo "*** Something is wrong with package install, Check the package status manually!"
+		echo "*** Exiting!"
 		exit
 	else
 		tanzu package installed list -A
-		echo "################### Please check if all the packages are succeeded ############################"
+		echo "Please check if all the packages have succeeded."
 		tanzu package installed get tap -n tap-install
 	fi
 else
@@ -57,30 +58,31 @@ else
         tanzu package installed update tap --package-name tap.tanzu.vmware.com --version ${TAP_VERSION} -n tap-install -f $HOME/tap-script/tap-values.yaml
 fi
 
-echo "############## Get the package install status #################"
+echo "Package install status:"
 tanzu package installed get tap -n tap-install
 tanzu package installed list -A
 
 
-echo "############# Updating tap-values file with LB ip ################"
+#echo "Updating tap-values file with LB ip..."
 
-ip=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
-hostname=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+#ip=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+#hostname=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
 
-if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
- then
-   sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"
-else
-  sed -i -r "s/lbip/$hostname/g" "$HOME/tap-script/tap-values.yaml"
-fi
+#if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
+# then
+#   sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"
+#else
+#  sed -i -r "s/lbip/$hostname/g" "$HOME/tap-script/tap-values.yaml"
+#fi
+
 
 tanzu package installed update tap --package-name tap.tanzu.vmware.com --version ${TAP_VERSION} -n tap-install -f $HOME/tap-script/tap-values.yaml
 tanzu package installed list -A
 
-echo "################ Cluster supply chain list #####################"
+echo "Cluster Supply Chain List:"
 tanzu apps cluster-supply-chain list
 
-echo "################ Developer namespace in tap-install #####################"
+echo "Developer Namespace in tap-install:"
 
 cat <<EOF > developer.yaml
 ---
@@ -206,20 +208,15 @@ grype:
   targetImagePullSecret: registry-credentials
 EOF
 
-echo "################### Installing Grype Scanner ##############################"
+echo "Installing Grype Scanner..."
 tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version ${TAP_VERSION}  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
 
-echo "################### Creating workload ##############################"
-#tanzu -n dev1 apps workload create tanzu-java-web-app-aks -f workload-tanzu-java-web-app-aks.yaml
-#tanzu -n dev1 apps workload get tanzu-java-web-app-aks
+echo "Creating Workload..."
 
 tanzu -n default apps workload create tanzu-java-web-app-aks -f workload-tanzu-java-web-app-aks.yaml
 tanzu -n default apps workload get tanzu-java-web-app-aks
 
+echo "Monitor The Progress..."
 
-echo "#######################################################################"
-echo "################ Monitor the progress #################################"
-echo "#######################################################################"
-#tanzu -n dev1 apps workload tail tanzu-java-web-app-aks --since 10m --timestamp
 
 tanzu -n default apps workload tail tanzu-java-web-app-aks --since 10m --timestamp
